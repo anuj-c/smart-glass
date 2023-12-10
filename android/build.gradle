@@ -1,13 +1,17 @@
 buildscript {
     ext {
         buildToolsVersion = "34.0.0"
-        minSdkVersion = 21
+        minSdkVersion = 26
         compileSdkVersion = 34
         targetSdkVersion = 34
         ndkVersion = "25.1.8937393"
         kotlinVersion = "1.8.0"
     }
     repositories {
+        maven {
+            url 'https://raw.githubusercontent.com/saki4510t/libcommon/master/repository'
+            allowInsecureProtocol = true
+        }
         google()
         mavenCentral()
     }
