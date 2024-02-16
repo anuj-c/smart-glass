@@ -47,33 +47,40 @@ class MainActivity : ReactActivity() {
           @RequiresApi(Build.VERSION_CODES.TIRAMISU)
           override fun onReceive(context: Context, intent: Intent) {
               Log.d("TAG", "BroadcastReceiver onReceive")
-              when (intent.action) {
+              try{
+                when (intent.action) {
                   actionUsbPermission -> {
-                      Log.d("TAG", "BroadcastReceiver onReceive2")
-                      synchronized(this) {
-                          val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
-                          if (device != null) {
-                              Log.d("TAG", "Device: ${device.deviceName}")
-                          }
-                          if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                              device?.apply {
-                                  Log.d("TAG", "USB Permission Granted for device: ${device.deviceName}")
-                                  // Permission granted, handle the device
-                              }
-                          } else {
-                              Log.d("TAG", "USB Permission Denied for device: ${device?.deviceName}")
-                          }
-                      }
-                  }
-                  UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
-                      val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
+                    Log.d("TAG", "BroadcastReceiver onReceive2")
+                    synchronized(this) {
+                      val device: UsbDevice? =
+                        intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
                       if (device != null) {
-                          Log.d("TAG", "USB attached: ${device.deviceName}")
+                        Log.d("TAG", "Device: ${device.deviceName}")
                       }
-                      device?.apply {
-                          usbManager.requestPermission(device, permissionIntent)
+                      if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        device?.apply {
+                          Log.d("TAG", "USB Permission Granted for device: ${device.deviceName}")
+                          // Permission granted, handle the device
+                        }
+                      } else {
+                        Log.d("TAG", "USB Permission Denied for device: ${device?.deviceName}")
                       }
+                    }
                   }
+
+                  UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
+                    val device: UsbDevice? =
+                      intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
+                    if (device != null) {
+                      Log.d("TAG", "USB attached: ${device.deviceName}")
+                    }
+                    device?.apply {
+                      usbManager.requestPermission(device, permissionIntent)
+                    }
+                  }
+                }
+              }catch(e: Exception) {
+                Log.d("TAG", "$e")
               }
           }
       }
