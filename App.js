@@ -1,70 +1,87 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
-import {
-  Button,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  NativeModules,
-} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {Button, StyleSheet, Text, View, NativeModules} from 'react-native';
 import {UvcCamera} from 'react-native-uvc-camera';
 
-const App = () => {
-  const [view, setView] = useState(false);
-  const [boundingBox, setBoundingBox] = useState({
-    bottom: 371,
-    left: 375,
-    right: 715,
-    top: 140,
-  });
-  const [theuri, setTheuri] = useState(
-    'file:///data/user/0/com.smart_g/cache/Camera/d90d36fb-050c-46c4-aaa6-8a94c527eb0b.jpg',
-  );
+const {ObjectDetection} = NativeModules;
+let refCamera = React.createRef();
 
-  let refCamera = React.createRef();
-  // const [counterId, setCounterId] = useState(null);
+const App = () => {
+  const [obje, setObje] = useState(['hello']);
+  const [view, setView] = useState(false);
+  const [detect, setDetect] = useState(false);
+  const detectRef = useRef(detect);
+  // const viewRef = useRef(view);
+
   let counterId;
 
-  const {ObjectDetection} = NativeModules;
-
-  if (view) {
-    const tempcounterId = setInterval(async () => {
-      const data = await refCamera.takePictureAsync();
-      await runFunction(data.uri);
-    }, 5000);
-    // setCounterId(tempcounterId);
-    counterId = tempcounterId;
-  }
-
-  const runFunction = async (uri) => {
-    ObjectDetection.detectObjects(uri).then((res) =>{
-      console.log(res);
-    }).catch((e) => {
-      console.log(e);
-    })
-    // console.log(res);
-    
-    // setTheuri(res);
-  };
-
+  /* #region  useEffect for uploading image to server */
   // useEffect(() => {
-  //   const takePhoto = async () => {
-  //     if (view) {
-  //       const tempcounterId = setInterval(async () => {
-  //         const data = await refCamera.takePictureAsync();
-  //         console.log(data);
-  //       }, 1000);
-  //       setCounterId(tempcounterId);
-  //     }
-  //   };
-  //   takePhoto();
+  //   viewRef.current = view;
   // }, [view]);
+
+  // const uploadImage = async uri => {
+  //   const formData = new FormData();
+  //   formData.append('image', {
+  //     uri: uri,
+  //     type: 'image/jpeg',
+  //     name: 'upload.jpg',
+  //   });
+
+  //   try {
+  //     const response = await fetch('http://10.42.0.1:5000/upload-image', {
+  //       method: 'POST',
+  //       body: formData,
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //     });
+
+  //     const responseJson = await response.json();
+  //     return responseJson.item;
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  // if (view) {
+  //   counterId = setInterval(async () => {
+  //     await runFunction();
+  //   }, 1500);
+  // }
+  /* #endregion */
+
+  useEffect(() => {
+    detectRef.current = detect;
+    console.log({log: 'inside useEffect', detect});
+
+    const runFunction = async () => {
+      while (detectRef.current) {
+        console.log({log: 'detecting', detect});
+        try {
+          const data = await refCamera.takePictureAsync();
+          try {
+            const res = await ObjectDetection.detectObjects(data.uri);
+            // const res = await uploadImage(data.uri);
+            console.log(res);
+            setObje(res);
+          } catch (e) {
+            console.log(e);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    };
+
+    runFunction();
+  }, [detect]);
 
   return (
     <View style={[styles.container]}>
       <View style={[styles.text]}>
-        <Text style={[styles.textStyles]}>Hello World</Text>
+        <Text style={[styles.textStyles]}>SmartG</Text>
       </View>
       <View style={[{marginBottom: 50}, styles.viewContainer]}>
         {view && (
@@ -76,13 +93,13 @@ const App = () => {
             rotation={90}
           />
         )}
-        <Image
-          source={{
-            uri: theuri,
-          }}
-          style={{width: 240, height: 370}}
-        />
+
         <View style={[styles.boundingBox]} />
+      </View>
+      <View style={[styles.bottomView]}>
+        {obje.map((obj, index) => (
+          <Text key={index} style={[styles.bottomText]}>{obj}</Text>
+        ))}
       </View>
       <View>
         <View style={[styles.button]}>
@@ -92,13 +109,14 @@ const App = () => {
           <Button
             title="Stop"
             onPress={() => {
-              setView(false);
-              clearInterval(counterId);
+              // setView(false);
+              setDetect(false);
+              // clearInterval(counterId);
             }}
           />
         </View>
         <View style={[styles.button]}>
-          <Button title="Detect" onPress={() => runFunction()} />
+          <Button title="Detect" onPress={() => setDetect(true)} />
         </View>
       </View>
     </View>
@@ -147,6 +165,22 @@ const styles = StyleSheet.create({
     fontWeight: 600,
     fontSize: 30,
     textAlign: 'center',
+  },
+  bottomText: {
+    marginBottom: 20,
+    textAlign: 'center',
+    color: 'black',
+    fontWeight: 600,
+    fontSize: 20,
+    width: '70%',
+    borderColor: 'black',
+    borderWidth: 2,
+    backgroundColor: 'skyblue',
+  },
+  bottomView: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
