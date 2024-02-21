@@ -2,21 +2,13 @@ package com.smart_g.objectDetection
 
 import android.app.ActivityManager
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
-import android.graphics.Matrix
-import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.core.BaseOptions
-import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 
-class Detector(private val context: Context) {
+class Detector(context: Context) {
   // Initialization
   private var options: ObjectDetector.ObjectDetectorOptions = ObjectDetector.ObjectDetectorOptions.builder()
     .setBaseOptions(BaseOptions.builder().build())

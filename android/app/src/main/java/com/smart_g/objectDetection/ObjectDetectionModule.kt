@@ -26,6 +26,7 @@ class ObjectDetectionModule(reactContext: ReactApplicationContext) : ReactContex
   private var image: Bitmap? = null
   private var tensorImage: TensorImage? = null
   private val detector = Detector(reactApplicationContext)
+  private val segmentor = Segment(reactApplicationContext)
 
   @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
@@ -40,7 +41,7 @@ class ObjectDetectionModule(reactContext: ReactApplicationContext) : ReactContex
         decoder.setOnPartialImageListener { _ -> true }
       }
 
-//      Log.d("TAG", "${image!!.width}, ${image!!.height}")
+      // Log.d("TAG", "${image!!.width}, ${image!!.height}")
 
       image = if (image!!.config == Bitmap.Config.ARGB_8888) {
         image
@@ -53,7 +54,7 @@ class ObjectDetectionModule(reactContext: ReactApplicationContext) : ReactContex
 
 
       val results = detector.detectObjects(tensorImage)
-//      Log.d("TAG", "Here: $results")
+      // Log.d("TAG", "Here: $results")
 
       val data = mutableListOf<String>()
       for (result in results) {
@@ -75,9 +76,39 @@ class ObjectDetectionModule(reactContext: ReactApplicationContext) : ReactContex
       tensorImage?.bitmap?.recycle()
       tensorImage = null
 
-//      Log.d("TAG", "Returning")
+      // Log.d("TAG", "Returning")
       promise.resolve(ret)
     } catch (e: Exception) {
+      Log.e("TAG", "Error in detecting objects", e)
+      promise.reject(e)
+    }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.P)
+  @ReactMethod
+  fun segmentFloor(uri: String, promise: Promise) {
+    try{
+      val imageUri = Uri.parse(uri)
+      val source = ImageDecoder.createSource(reactApplicationContext.contentResolver, imageUri)
+      image = ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+        decoder.setTargetSize(480, 640)
+        decoder.setTargetColorSpace(android.graphics.ColorSpace.get(android.graphics.ColorSpace.Named.SRGB))
+        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+        decoder.setOnPartialImageListener { _ -> true }
+      }
+
+      image = if (image!!.config == Bitmap.Config.ARGB_8888) {
+        image
+      } else {
+        image!!.copy(Bitmap.Config.ARGB_8888, true)
+      }
+
+      image = image?.let { Bitmap.createBitmap(it, 0, 0, image!!.width, image!!.height, matrix, true) }
+      tensorImage = TensorImage.fromBitmap(image)
+
+      val results = segmentor.segmentFloor(tensorImage)
+
+    }catch(e: Exception) {
       Log.e("TAG", "Error in detecting objects", e)
       promise.reject(e)
     }

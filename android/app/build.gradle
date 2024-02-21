@@ -99,6 +99,7 @@ android {
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
@@ -106,6 +107,9 @@ android {
         noCompress "tflite"
         // or noCompress "lite"
     }
+    project.ext.react = [
+        enableHermes: true  // <- set to true to enable Hermes
+    ]
 }
 
 dependencies {

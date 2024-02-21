@@ -1,6 +1,13 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, StyleSheet, Text, View, NativeModules} from 'react-native';
+import {
+  Button,
+  StyleSheet,
+  Text,
+  View,
+  NativeModules,
+  Image,
+} from 'react-native';
 import {UvcCamera} from 'react-native-uvc-camera';
 
 const {ObjectDetection} = NativeModules;
@@ -10,10 +17,11 @@ const App = () => {
   const [obje, setObje] = useState(['hello']);
   const [view, setView] = useState(false);
   const [detect, setDetect] = useState(false);
+  const [segment, setSegment] = useState('');
   const detectRef = useRef(detect);
   // const viewRef = useRef(view);
 
-  let counterId;
+  // let counterId;
 
   /* #region  useEffect for uploading image to server */
   // useEffect(() => {
@@ -78,6 +86,59 @@ const App = () => {
     runFunction();
   }, [detect]);
 
+  /* #region  Segmentation Function to compute on-device */
+  // const segmentFun = async () => {
+  //   console.log({log: 'segmenting', detect});
+  //   try {
+  //     const data = await refCamera.takePictureAsync();
+  //     try {
+  //       await ObjectDetection.segmentFloor(data.uri);
+  //       // const res = await uploadImage(data.uri);
+  //       console.log('Finished segment');
+  //       // setObje(res);
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
+  /* #endregion */
+
+  const segmentFun = async () => {
+    console.log({log: 'segmenting', detect});
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const formData = new FormData();
+        formData.append('image', {
+          uri: data.uri,
+          type: 'image/jpeg',
+          name: 'upload.jpg',
+        });
+
+        try {
+          const response = await fetch('http://10.42.0.1:5000/segment-floor', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+
+          const responseJson = await response.json();
+          setSegment(responseJson.item);
+        } catch (error) {
+          console.error(error);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <View style={[styles.container]}>
       <View style={[styles.text]}>
@@ -93,12 +154,23 @@ const App = () => {
             rotation={90}
           />
         )}
-
-        <View style={[styles.boundingBox]} />
+        {segment.length > 0 && (
+          <View style={{zIndex: 100, position: 'absolute'}}>
+            <View style={[styles.closeBtn]}>
+              <Button title="Close" onPress={() => setSegment('')} />
+            </View>
+            <Image
+              source={{uri: `data:image/jpeg;base64,${segment}`}}
+              style={[styles.segImage]}
+            />
+          </View>
+        )}
       </View>
       <View style={[styles.bottomView]}>
         {obje.map((obj, index) => (
-          <Text key={index} style={[styles.bottomText]}>{obj}</Text>
+          <Text key={index} style={[styles.bottomText]}>
+            {obj}
+          </Text>
         ))}
       </View>
       <View>
@@ -115,8 +187,22 @@ const App = () => {
             }}
           />
         </View>
-        <View style={[styles.button]}>
-          <Button title="Detect" onPress={() => setDetect(true)} />
+        <View
+          style={[
+            styles.button,
+            {
+              display: 'flex',
+              justifyContent: 'space-around',
+              alignItems: 'center',
+              flexDirection: 'row',
+            },
+          ]}>
+          <View>
+            <Button title="Detect" onPress={() => setDetect(true)} />
+          </View>
+          <View>
+            <Button title="Segment" onPress={() => segmentFun()} />
+          </View>
         </View>
       </View>
     </View>
@@ -127,6 +213,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+  },
+  segImage: {
+    width: 375,
+    height: 280,
+    transform: [{rotate: '270deg'}, {translateX: -7}, {translateY: -65}],
+  },
+  closeBtn: {
+    transform: [{rotate: '270deg'}, {translateX: -30}, {translateY: -87}],
+    width: 100,
   },
   camera: {
     position: 'relative',
