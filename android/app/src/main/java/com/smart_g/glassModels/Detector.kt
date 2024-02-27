@@ -1,4 +1,4 @@
-package com.smart_g.objectDetection
+package com.smart_g.glassModels
 
 import android.app.ActivityManager
 import android.content.Context

@@ -139,6 +139,36 @@ const App = () => {
     }
   };
 
+  const saveImage = async () => {
+    console.log({log: 'saving', detect});
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        await ObjectDetection.saveImageFromUri(data.uri, 'uploadedImage.jpg');
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  const detectText = async () => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.detectText(data.uri);
+        // const res = await uploadImage(data.uri);
+        console.log(res);
+        // setObje(res);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <View style={[styles.container]}>
       <View style={[styles.text]}>
@@ -174,18 +204,26 @@ const App = () => {
         ))}
       </View>
       <View>
-        <View style={[styles.button]}>
-          <Button title="Start" onPress={() => setView(true)} />
-        </View>
-        <View style={[styles.button]}>
-          <Button
-            title="Stop"
-            onPress={() => {
-              // setView(false);
-              setDetect(false);
-              // clearInterval(counterId);
-            }}
-          />
+        <View
+          style={[
+            styles.button,
+            {
+              display: 'flex',
+              justifyContent: 'space-around',
+              alignItems: 'center',
+              flexDirection: 'row',
+            },
+         ]}
+        >
+          <View style={[styles.button]}>
+            <Button title="Start" onPress={() => setView(true)} />
+          </View>
+          <View style={[styles.button]}>
+            <Button title="Stop" onPress={() => setDetect(false)} />
+          </View>
+          <View style={[styles.button]}>
+            <Button title="Save" onPress={saveImage} />
+          </View>
         </View>
         <View
           style={[
@@ -202,6 +240,9 @@ const App = () => {
           </View>
           <View>
             <Button title="Segment" onPress={() => segmentFun()} />
+          </View>
+          <View>
+            <Button title="Text" onPress={() => detectText()} />
           </View>
         </View>
       </View>
@@ -248,7 +289,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   button: {
-    width: '100%',
+    // width: '100%',
     padding: 10,
   },
   text: {
