@@ -136,11 +136,11 @@ class ObjectDetectionModule(reactContext: ReactApplicationContext) : ReactContex
       val originalBitmap = BitmapFactory.decodeStream(reactApplicationContext.contentResolver.openInputStream(imageUri))
       val rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
       val rotatedInputImage = InputImage.fromBitmap(rotatedBitmap, 0)
-      val results = textDetector.detect(reactApplicationContext, rotatedInputImage)
-
-      Log.d("TAG", "$results")
-      
-      promise.resolve("Done")
+      textDetector.detect(reactApplicationContext, rotatedInputImage) {resText ->
+        val resultText = resText.text
+        Log.d("TAG", "Inside function: $resultText")
+        promise.resolve(resultText)
+      }
     }catch(e: Exception) {
       promise.reject(e)
     }

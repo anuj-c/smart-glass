@@ -19,11 +19,12 @@ const App = () => {
   const [detect, setDetect] = useState(false);
   const [segment, setSegment] = useState('');
   const detectRef = useRef(detect);
+  const [dText, setDText] = useState('');
   // const viewRef = useRef(view);
 
   // let counterId;
 
-  /* #region  useEffect for uploading image to server */
+  // useEffect for uploading image to server */
   // useEffect(() => {
   //   viewRef.current = view;
   // }, [view]);
@@ -57,7 +58,7 @@ const App = () => {
   //     await runFunction();
   //   }, 1500);
   // }
-  /* #endregion */
+  // #endregion */
 
   useEffect(() => {
     detectRef.current = detect;
@@ -158,9 +159,8 @@ const App = () => {
       const data = await refCamera.takePictureAsync();
       try {
         const res = await ObjectDetection.detectText(data.uri);
-        // const res = await uploadImage(data.uri);
         console.log(res);
-        // setObje(res);
+        setObje([res]);
       } catch (e) {
         console.log(e);
       }
@@ -169,12 +169,17 @@ const App = () => {
     }
   };
 
+  const handleStop = () => {
+    setDetect(false);
+    setView(false);
+  }
+
   return (
     <View style={[styles.container]}>
       <View style={[styles.text]}>
         <Text style={[styles.textStyles]}>SmartG</Text>
       </View>
-      <View style={[{marginBottom: 50}, styles.viewContainer]}>
+      <View style={[{marginBottom: 0}, styles.viewContainer]}>
         {view && (
           <UvcCamera
             ref={ref => {
@@ -195,6 +200,9 @@ const App = () => {
             />
           </View>
         )}
+      </View>
+      <View style={[styles.button, {display: 'flex', justifyContent: 'center', alignItems: 'center'}]}>
+        <Button title="Clear" onPress={() => setObje([])} />
       </View>
       <View style={[styles.bottomView]}>
         {obje.map((obj, index) => (
@@ -219,7 +227,7 @@ const App = () => {
             <Button title="Start" onPress={() => setView(true)} />
           </View>
           <View style={[styles.button]}>
-            <Button title="Stop" onPress={() => setDetect(false)} />
+            <Button title="Stop" onPress={handleStop} />
           </View>
           <View style={[styles.button]}>
             <Button title="Save" onPress={saveImage} />
