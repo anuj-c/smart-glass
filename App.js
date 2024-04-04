@@ -46,40 +46,6 @@ const App = () => {
     runFunction();
   }, [detect]);
 
-  const segmentFun = async () => {
-    console.log({log: 'segmenting', detect});
-    try {
-      const data = await refCamera.takePictureAsync();
-      try {
-        const formData = new FormData();
-        formData.append('image', {
-          uri: data.uri,
-          type: 'image/jpeg',
-          name: 'upload.jpg',
-        });
-
-        try {
-          const response = await fetch('http://10.42.0.1:5000/segment-floor', {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-
-          const responseJson = await response.json();
-          setSegment(responseJson.item);
-        } catch (error) {
-          console.error(error);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   const saveImage = async () => {
     console.log({log: 'saving', detect});
     try {
@@ -181,9 +147,6 @@ const App = () => {
           ]}>
           <View>
             <Button title="Detect" onPress={() => setDetect(true)} />
-          </View>
-          <View>
-            <Button title="Segment" onPress={() => segmentFun()} />
           </View>
           <View>
             <Button title="Text" onPress={() => detectText()} />
