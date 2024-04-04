@@ -37,22 +37,6 @@ const App = () => {
     runFunction();
   }, [detect]);
 
-  /* #region  Save Image function */
-  // const saveImage = async () => {
-  //   console.log({log: 'saving', detect});
-  //   try {
-  //     const data = await refCamera.takePictureAsync();
-  //     try {
-  //       await ObjectDetection.saveImageFromUri(data.uri, 'uploadedImage.jpg');
-  //     } catch (e) {
-  //       console.log(e);
-  //     }
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // };
-  /* #endregion */
-
   const detectText = async () => {
     try {
       const data = await refCamera.takePictureAsync();
@@ -176,9 +160,6 @@ const App = () => {
               <View style={[styles.button]}>
                 <Button title="Stop" onPress={handleStop} />
               </View>
-              {/* <View style={[styles.button]}>
-                <Button title="Save" onPress={saveImage} />
-              </View> */}
               <View style={[styles.button]}>
                 <Button title="Listen" onPress={handleListen} />
               </View>
