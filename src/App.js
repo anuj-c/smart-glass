@@ -37,19 +37,21 @@ const App = () => {
     runFunction();
   }, [detect]);
 
-  const saveImage = async () => {
-    console.log({log: 'saving', detect});
-    try {
-      const data = await refCamera.takePictureAsync();
-      try {
-        await ObjectDetection.saveImageFromUri(data.uri, 'uploadedImage.jpg');
-      } catch (e) {
-        console.log(e);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  /* #region  Save Image function */
+  // const saveImage = async () => {
+  //   console.log({log: 'saving', detect});
+  //   try {
+  //     const data = await refCamera.takePictureAsync();
+  //     try {
+  //       await ObjectDetection.saveImageFromUri(data.uri, 'uploadedImage.jpg');
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
+  /* #endregion */
 
   const detectText = async () => {
     try {
