@@ -6,53 +6,64 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   contentContainer: {
-    display: 'flex',
     flex: 1,
-    backgroundColor: 'rgba(255,0,0,0.4)',
-    justifyContent: 'space-between',
   },
-  viewContainer: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    marginTop: 10,
-    borderColor: 'black',
-    borderWidth: 2,
+  cameraOuterContainer: {
     position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    transform: [{rotate: '90deg'}],
-    // width: 240,
-    // height: 370,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    height: 300,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  cameraContainer: {
+    position: 'absolute',
+    transform: [{rotate: '90deg'}, {translateX: -35}],
   },
   camera: {
-    position: 'relative',
     width: 240,
     height: 370,
-    // transform: [{rotate: '90deg'}],
   },
-  functionalityContainer: {
-    backgroundColor: 'rgba(255,255,0,0.4)',
+  resultContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
-  bottomView: {
+  displayResContainer: {
+    flex: 1,
+    marginVertical: 5,
+    backgroundColor: 'rgba(0,150,255,0.4)',
+  },
+  resultView: {
+    marginTop: 10,
+    paddingHorizontal: 30,
+  },
+  resultTextContainer: {
     display: 'flex',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  bottomText: {
+  resultText: {
     marginBottom: 20,
+    marginHorizontal: 10,
     textAlign: 'center',
     color: 'black',
-    fontWeight: 600,
+    fontWeight: 500,
     fontSize: 20,
-    width: '70%',
+    paddingHorizontal: 10,
     borderColor: 'black',
-    borderWidth: 2,
-    backgroundColor: 'skyblue',
+    borderWidth: 1,
+    // backgroundColor: 'skyblue',
+    backgroundColor: 'rgba(135,206,235,1)',
+  },
+  functionalityContainer: {
+    backgroundColor: 'rgba(0,150,255,0.4)',
   },
   functionalityButtons: {
-    display: 'flex',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
+    flexWrap: 'wrap',
   },
   segImage: {
     width: 375,
@@ -75,7 +86,6 @@ const styles = StyleSheet.create({
   },
   text: {
     backgroundColor: 'skyblue',
-    marginBottom: 20,
   },
   textStyles: {
     color: 'black',

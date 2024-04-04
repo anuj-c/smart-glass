@@ -51,6 +51,9 @@ const fontHelpers = {
   textMedium: {fontSize: 16},
   textLarge: {fontSize: 20},
   textBold: {fontWeight: 'bold'},
+  textCenter: {textAlign: 'center'},
+  textDark: {color: 'rgba(0,0,0,1)'},
+  textUpper: {textTransform: 'uppercase'},
   // Add more as needed
 };
 
