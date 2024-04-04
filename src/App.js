@@ -1,14 +1,7 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useRef, useState} from 'react';
-import {
-  Button,
-  StyleSheet,
-  Text,
-  View,
-  NativeModules,
-  Image,
-} from 'react-native';
+import {Button, Text, View, NativeModules} from 'react-native';
 import {UvcCamera} from 'react-native-uvc-camera';
+import {hstyles, styles} from './Styles';
 
 const {ObjectDetection} = NativeModules;
 let refCamera = React.createRef();
@@ -21,11 +14,9 @@ const App = () => {
 
   useEffect(() => {
     detectRef.current = detect;
-    console.log({log: 'inside useEffect', detect});
 
     const runFunction = async () => {
       while (detectRef.current) {
-        console.log({log: 'detecting', detect});
         try {
           const data = await refCamera.takePictureAsync();
           try {
@@ -86,7 +77,7 @@ const App = () => {
         <Text style={[styles.textStyles]}>SmartG</Text>
       </View>
 
-      <View style={{}}>
+      <View style={[styles.contentContainer]}>
         <View style={[styles.viewContainer]}>
           {view && (
             <UvcCamera
@@ -98,56 +89,56 @@ const App = () => {
             />
           )}
         </View>
-        <View
-          style={[
-            styles.button,
-            {display: 'flex', justifyContent: 'center', alignItems: 'center'},
-          ]}>
-          <Button title="Clear" onPress={() => setObje([])} />
-        </View>
-        <View style={[styles.bottomView]}>
-          {obje.map((obj, index) => (
-            <Text key={index} style={[styles.bottomText]}>
-              {obj}
-            </Text>
-          ))}
-        </View>
-        <View>
+
+        <View style={[styles.functionalityContainer]}>
           <View
             style={[
               styles.button,
-              {
-                display: 'flex',
-                justifyContent: 'space-around',
-                alignItems: 'center',
-                flexDirection: 'row',
-              },
+              hstyles.flex,
+              hstyles.alignCenter,
+              hstyles.justifyCenter,
             ]}>
-            <View style={[styles.button]}>
-              <Button title="Start" onPress={() => setView(true)} />
-            </View>
-            <View style={[styles.button]}>
-              <Button title="Stop" onPress={handleStop} />
-            </View>
-            <View style={[styles.button]}>
-              <Button title="Save" onPress={saveImage} />
-            </View>
+            <Button title="Clear" onPress={() => setObje([])} />
           </View>
-          <View
-            style={[
-              styles.button,
-              {
-                display: 'flex',
-                justifyContent: 'space-around',
-                alignItems: 'center',
-                flexDirection: 'row',
-              },
-            ]}>
-            <View>
-              <Button title="Detect" onPress={() => setDetect(true)} />
+          <View style={[styles.bottomView]}>
+            {obje.map((obj, index) => (
+              <Text key={index} style={[styles.bottomText]}>
+                {obj}
+              </Text>
+            ))}
+          </View>
+          <View>
+            <View style={[styles.button, styles.functionalityButtons]}>
+              <View style={[styles.button]}>
+                <Button title="Start" onPress={() => setView(true)} />
+              </View>
+              <View style={[styles.button]}>
+                <Button title="Stop" onPress={handleStop} />
+              </View>
+              <View style={[styles.button]}>
+                <Button title="Save" onPress={saveImage} />
+              </View>
+              <View style={[styles.button]}>
+                <Button title="Listen" onPress={saveImage} />
+              </View>
+              <View style={[styles.button]}>
+                <Button title="Speak" onPress={saveImage} />
+              </View>
             </View>
-            <View>
-              <Button title="Text" onPress={() => detectText()} />
+            <View
+              style={[
+                styles.button,
+                hstyles.flex,
+                hstyles.justifyAround,
+                hstyles.alignCenter,
+                hstyles.flexRow,
+              ]}>
+              <View>
+                <Button title="Detect" onPress={() => setDetect(true)} />
+              </View>
+              <View>
+                <Button title="Text" onPress={() => detectText()} />
+              </View>
             </View>
           </View>
         </View>
@@ -155,76 +146,5 @@ const App = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  segImage: {
-    width: 375,
-    height: 280,
-    transform: [{rotate: '270deg'}, {translateX: -7}, {translateY: -65}],
-  },
-  closeBtn: {
-    transform: [{rotate: '270deg'}, {translateX: -30}, {translateY: -87}],
-    width: 100,
-  },
-  camera: {
-    position: 'relative',
-    width: 240,
-    height: 370,
-    // transform: [{rotate: '90deg'}],
-  },
-  boundingBox: {
-    position: 'absolute',
-    borderColor: 'red',
-    borderWidth: 2,
-    backgroundColor: 'red',
-    zIndex: 100,
-  },
-  viewContainer: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    marginTop: 10,
-    borderColor: 'black',
-    borderWidth: 2,
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    transform: [{rotate: '90deg'}],
-    // width: 240,
-    // height: 370,
-  },
-  button: {
-    // width: '100%',
-    padding: 10,
-  },
-  text: {
-    backgroundColor: 'skyblue',
-    marginBottom: 20,
-  },
-  textStyles: {
-    color: 'black',
-    fontWeight: 600,
-    fontSize: 30,
-    textAlign: 'center',
-  },
-  bottomText: {
-    marginBottom: 20,
-    textAlign: 'center',
-    color: 'black',
-    fontWeight: 600,
-    fontSize: 20,
-    width: '70%',
-    borderColor: 'black',
-    borderWidth: 2,
-    backgroundColor: 'skyblue',
-  },
-  bottomView: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default App;
