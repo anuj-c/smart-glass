@@ -1,4 +1,4 @@
-package com.smart_g.glassModels
+package com.smart_g
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -14,12 +14,16 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
 import com.google.mlkit.vision.common.InputImage
+import com.smart_g.glassModels.Audio
+import com.smart_g.glassModels.Detector
+import com.smart_g.glassModels.Segment
+import com.smart_g.glassModels.TextDetection
 import org.tensorflow.lite.support.image.TensorImage
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 
-class ObjectDetectionModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   override fun getName(): String {
     return "ObjectDetection"
   }
@@ -144,5 +148,21 @@ class ObjectDetectionModule(reactContext: ReactApplicationContext) : ReactContex
     }catch(e: Exception) {
       promise.reject(e)
     }
+  }
+
+  private val audioClass = Audio(reactApplicationContext)
+  @ReactMethod
+  fun callSpeaker(text: String, promise: Promise) {
+    audioClass.speakText(text)
+    Log.d("TAG", "Called it")
+  }
+
+  @ReactMethod
+  fun callListener(promise: Promise) {
+    audioClass.setTextRecognitionCallback { recognizedText ->
+      Log.d("TAG", "Recognized text: $recognizedText")
+      promise.resolve(recognizedText)
+    }
+    audioClass.startListening()
   }
 }

@@ -4,11 +4,10 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
-import com.smart_g.glassModels.ObjectDetectionModule
 
 class CustomPackage : ReactPackage {
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-    return listOf(ObjectDetectionModule(reactContext))
+    return listOf(ReactNativeModule(reactContext))
   }
 
   // Implement createViewManagers if you have custom views

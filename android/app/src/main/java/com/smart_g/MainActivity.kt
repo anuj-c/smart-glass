@@ -3,14 +3,17 @@ package com.smart_g
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.Manifest
 import android.content.Intent
 import android.content.IntentFilter
-import android.hardware.usb.UsbDevice
+import android.content.pm.PackageManager
 import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -27,7 +30,9 @@ class MainActivity : ReactActivity() {
   private lateinit var usbManager: UsbManager
   private lateinit var usbReceiver: BroadcastReceiver
 
-
+  companion object {
+    const val RECORD_AUDIO_REQUEST_CODE = 101
+  }
   /**
    * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
    * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
@@ -44,50 +49,30 @@ class MainActivity : ReactActivity() {
       val filter = IntentFilter(actionUsbPermission)
 
       usbReceiver = object : BroadcastReceiver() {
-          @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-          override fun onReceive(context: Context, intent: Intent) {
-              Log.d("TAG", "BroadcastReceiver onReceive")
-              try{
-                when (intent.action) {
-                  actionUsbPermission -> {
-                    Log.d("TAG", "BroadcastReceiver onReceive2")
-                    synchronized(this) {
-                      val device: UsbDevice? =
-                        intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
-                      if (device != null) {
-                        Log.d("TAG", "Device: ${device.deviceName}")
-                      }
-                      if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        device?.apply {
-                          Log.d("TAG", "USB Permission Granted for device: ${device.deviceName}")
-                          // Permission granted, handle the device
-                        }
-                      } else {
-                        Log.d("TAG", "USB Permission Denied for device: ${device?.deviceName}")
-                      }
-                    }
-                  }
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+        override fun onReceive(context: Context, intent: Intent) {
+          Permissions.cameraPermission(permissionIntent, intent, context, actionUsbPermission, usbManager)
+        }
+      }
 
-                  UsbManager.ACTION_USB_DEVICE_ATTACHED -> {
-                    val device: UsbDevice? =
-                      intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
-                    if (device != null) {
-                      Log.d("TAG", "USB attached: ${device.deviceName}")
-                    }
-                    device?.apply {
-                      usbManager.requestPermission(device, permissionIntent)
-                    }
-                  }
-                }
-              }catch(e: Exception) {
-                Log.d("TAG", "$e")
-              }
-          }
+      if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), RECORD_AUDIO_REQUEST_CODE)
       }
 
       registerReceiver(usbReceiver, filter)
 
       Log.d("TAG", "BroadcastReceiver registered for USB Permission")
+  }
+
+  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    if (requestCode == RECORD_AUDIO_REQUEST_CODE) {
+      if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+        Log.d("TAG", "Audio Permission Granted")
+      } else {
+        Log.d("TAG", "Audio Permission Rejected")
+      }
+    }
   }
 
   override fun onResume() {
