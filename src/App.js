@@ -86,70 +86,69 @@ const App = () => {
         <Text style={[styles.textStyles]}>SmartG</Text>
       </View>
 
-      <View style={[{marginBottom: 0}, styles.viewContainer]}>
-        {view && (
-          <UvcCamera
-            ref={ref => {
-              refCamera = ref;
-            }}
-            style={styles.camera}
-            rotation={90}
-          />
-        )}
-      </View>
-
-      <View
-        style={[
-          styles.button,
-          {display: 'flex', justifyContent: 'center', alignItems: 'center'},
-        ]}>
-        <Button title="Clear" onPress={() => setObje([])} />
-      </View>
-
-      <View style={[styles.bottomView]}>
-        {obje.map((obj, index) => (
-          <Text key={index} style={[styles.bottomText]}>
-            {obj}
-          </Text>
-        ))}
-      </View>
-
-      <View>
-        <View
-          style={[
-            styles.button,
-            {
-              display: 'flex',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-              flexDirection: 'row',
-            },
-          ]}>
-          <View style={[styles.button]}>
-            <Button title="Start" onPress={() => setView(true)} />
-          </View>
-          <View style={[styles.button]}>
-            <Button title="Stop" onPress={handleStop} />
-          </View>
-          <View style={[styles.button]}>
-            <Button title="Save" onPress={saveImage} />
-          </View>
+      <View style={{}}>
+        <View style={[styles.viewContainer]}>
+          {view && (
+            <UvcCamera
+              ref={ref => {
+                refCamera = ref;
+              }}
+              style={styles.camera}
+              rotation={90}
+            />
+          )}
         </View>
         <View
           style={[
             styles.button,
-            {
-              display: 'flex',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-              flexDirection: 'row',
-            },
+            {display: 'flex', justifyContent: 'center', alignItems: 'center'},
           ]}>
-          <View>
-            <Button title="Detect" onPress={() => setDetect(true)} />
+          <Button title="Clear" onPress={() => setObje([])} />
+        </View>
+        <View style={[styles.bottomView]}>
+          {obje.map((obj, index) => (
+            <Text key={index} style={[styles.bottomText]}>
+              {obj}
+            </Text>
+          ))}
+        </View>
+        <View>
+          <View
+            style={[
+              styles.button,
+              {
+                display: 'flex',
+                justifyContent: 'space-around',
+                alignItems: 'center',
+                flexDirection: 'row',
+              },
+            ]}>
+            <View style={[styles.button]}>
+              <Button title="Start" onPress={() => setView(true)} />
+            </View>
+            <View style={[styles.button]}>
+              <Button title="Stop" onPress={handleStop} />
+            </View>
+            <View style={[styles.button]}>
+              <Button title="Save" onPress={saveImage} />
+            </View>
           </View>
-          <View>
-            <Button title="Text" onPress={() => detectText()} />
+          <View
+            style={[
+              styles.button,
+              {
+                display: 'flex',
+                justifyContent: 'space-around',
+                alignItems: 'center',
+                flexDirection: 'row',
+              },
+            ]}>
+            <View>
+              <Button title="Detect" onPress={() => setDetect(true)} />
+            </View>
+            <View>
+              <Button title="Text" onPress={() => detectText()} />
+            </View>
           </View>
         </View>
       </View>
@@ -185,16 +184,16 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   viewContainer: {
-    top: 0,
-    // width: 240,
-    // height: 370,
     backgroundColor: 'rgba(0,0,0,0.3)',
+    marginTop: 10,
     borderColor: 'black',
     borderWidth: 2,
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
     transform: [{rotate: '90deg'}],
+    // width: 240,
+    // height: 370,
   },
   button: {
     // width: '100%',
