@@ -4,8 +4,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.graphics.Matrix
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.Arguments
@@ -117,6 +119,93 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
     }
   }
 
+  private fun saveBitmapToFile(bitmap: Bitmap?): String {
+    val filename = "myimage.jpg"
+    // Check for external storage availability
+    if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+      return ""
+    }
+
+    // Prepare the file path and file
+    val picturesDirectory = reactApplicationContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+    val imageFile = File(picturesDirectory, filename)
+
+    // Use FileOutputStream to write the bitmap to the specified file
+    var fileOutputStream: FileOutputStream? = null
+    try {
+      fileOutputStream = FileOutputStream(imageFile)
+      bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream) // PNG is lossless
+      fileOutputStream.flush()
+      return "file://$picturesDirectory/$filename"
+    } catch (e: Exception) {
+      e.printStackTrace()
+    } finally {
+      try {
+        fileOutputStream?.close()
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
+    return ""
+  }
+
+  private fun getTensorImageFromVideoUri(uri: Uri, frameTime: Long): String {
+    val retriever = MediaMetadataRetriever()
+    return try {
+      retriever.setDataSource(reactApplicationContext, uri)
+      val bitmap = retriever.getFrameAtTime(frameTime, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+      return saveBitmapToFile(bitmap)
+    } catch (e: IllegalArgumentException) {
+      e.printStackTrace()
+      "null"
+    } finally {
+      retriever.release()
+    }
+  }
+
+  private fun convertBitmapToTensorImage(bitmap: Bitmap): TensorImage {
+    return TensorImage.fromBitmap(bitmap)
+
+//    val imageProcessor = ImageProcessor.Builder()
+//      .add(ResizeWithCropOrPadOp(640, 480))
+//      .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
+//      .build()
+
+//    return imageProcessor.process(tensorImage)
+  }
+  @RequiresApi(Build.VERSION_CODES.P)
+  @ReactMethod
+  fun detectObjectFromRecording(uri: String, promise: Promise) {
+    try {
+      val videoUri = Uri.parse(uri)
+      val retArr = Arguments.createArray()
+      for(i in 1..5){
+        val frameTime = i*200000L
+        val tensorUri = getTensorImageFromVideoUri(videoUri, frameTime)
+
+        tensorImage = uriToTensor(tensorUri)
+        val results = detector.detectObjects(tensorImage)
+        val data = mutableListOf<String>()
+        for (result in results) {
+          val cates = result.categories
+          for (cats in cates) {
+            val label = cats.label
+            data.add(label)
+          }
+        }
+
+        val ret = Arguments.createArray()
+        for (label in data) {
+          ret.pushString(label)
+        }
+        retArr.pushArray(ret)
+      }
+      promise.resolve(retArr)
+    }catch(e: Exception) {
+      Log.e("TAG", "Error in detecting object from video")
+    }
+  }
+
   // Floor Segmentation function which currently is not running because of model issues
   @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
@@ -152,7 +241,7 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
 
   private val audioClass = Audio(reactApplicationContext)
   @ReactMethod
-  fun callSpeaker(text: String, promise: Promise) {
+  fun callSpeaker(text: String) {
     audioClass.speakText(text)
     Log.d("TAG", "Called it")
   }

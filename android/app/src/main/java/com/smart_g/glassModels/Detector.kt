@@ -38,7 +38,6 @@ class Detector(context: Context) {
   fun detectObjects(tensorImage: TensorImage?): MutableList<org.tensorflow.lite.task.vision.detector.Detection> {
 //    if (isMemoryAvailable(context)) {
     val results = detector.detect(tensorImage)
-
     tensorImage?.bitmap?.recycle()
 
     return results ?: mutableListOf<org.tensorflow.lite.task.vision.detector.Detection>()

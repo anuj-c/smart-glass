@@ -128,13 +128,15 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-support:0.4.4'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.14.0'
     implementation 'org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.4'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 
     // To recognize Latin script
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.0'
 
     // To recognize Devanagari script
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition-devanagari:16.0.0'
+
+    implementation 'com.google.mlkit:face-mesh-detection:16.0.0-beta2'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

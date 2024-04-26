@@ -53,6 +53,7 @@ const fontHelpers = {
   textBold: {fontWeight: 'bold'},
   textCenter: {textAlign: 'center'},
   textDark: {color: 'rgba(0,0,0,1)'},
+  textLight: {color: 'rgba(255,255,255,1)'},
   textUpper: {textTransform: 'uppercase'},
   // Add more as needed
 };

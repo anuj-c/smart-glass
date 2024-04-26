@@ -5,6 +5,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
+  headerText: {
+    backgroundColor: 'rgba(135, 206, 235, 1)',
+    paddingVertical: 10,
+  },
+  textStyles: {
+    color: 'black',
+    fontWeight: 600,
+    fontSize: 30,
+    textAlign: 'center',
+  },
   contentContainer: {
     flex: 1,
   },
@@ -57,7 +67,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(135,206,235,1)',
   },
   functionalityContainer: {
-    backgroundColor: 'rgba(0,150,255,0.4)',
+    backgroundColor: 'rgba(0,150,255,1)',
+  },
+  listenButton: {
+    paddingVertical: 30,
   },
   functionalityButtons: {
     justifyContent: 'center',
@@ -80,18 +93,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: 'red',
     zIndex: 100,
-  },
-  button: {
-    padding: 10,
-  },
-  text: {
-    backgroundColor: 'skyblue',
-  },
-  textStyles: {
-    color: 'black',
-    fontWeight: 600,
-    fontSize: 30,
-    textAlign: 'center',
   },
 });
 
