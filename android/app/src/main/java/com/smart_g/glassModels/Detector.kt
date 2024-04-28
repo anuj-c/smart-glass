@@ -12,11 +12,11 @@ class Detector(context: Context) {
   // Initialization
   private var options: ObjectDetector.ObjectDetectorOptions = ObjectDetector.ObjectDetectorOptions.builder()
     .setBaseOptions(BaseOptions.builder().build())
-    .setMaxResults(5)
-    .setScoreThreshold(0.4f)
+    .setScoreThreshold(0.5f)
     .build()
 
-  private var modelFile = "model.tflite"
+//  private var modelFile = "model.tflite"
+  private var modelFile = "ssdmobilenetv1.tflite"
   private var detector: ObjectDetector = ObjectDetector.createFromFileAndOptions(
     context, modelFile, options
   )

@@ -7,7 +7,6 @@ import {
   ScrollView,
   Pressable,
 } from 'react-native';
-import {IconButton, MD3Colors} from 'react-native-paper';
 import {UvcCamera} from 'react-native-uvc-camera';
 import {hstyles, styles} from './Styles';
 
@@ -18,6 +17,7 @@ const App = () => {
   const [obje, setObje] = useState(['Objects', 'Detected', 'Here']);
   const [view, setView] = useState(false);
   const [detect, setDetect] = useState(false);
+  const [showAllBtns, setShowAllBtns] = useState(false);
   const detectRef = useRef(detect);
 
   // useEffect to continuously perform object detection
@@ -46,6 +46,113 @@ const App = () => {
     runFunction();
   }, [detect]);
 
+  const handleStop = () => {
+    setDetect(false);
+    setView(false);
+  };
+
+  const executedCommand = res => {
+    const resArray = res.split(' ');
+    setObje(resArray);
+    console.log(resArray);
+    if (resArray.includes('start')) {
+      setView(true);
+    } else if (
+      ['stop', 'terminate', 'end'].some(word => resArray.includes(word)) &&
+      ['camera'].every(word => resArray.includes(word))
+    ) {
+      handleStop();
+    } else if (resArray.includes('text')) {
+      detectText();
+    } else if (['detect', 'objects'].every(word => resArray.includes(word))) {
+      //handleRecord();
+      detectObjects();
+    } else if (['is', 'there'].every(word => resArray.includes(word))) {
+      // TODO: write appropriate function here
+      handleRecord();
+    } else if (resArray.includes('remember')) {
+      handleFaceRecog(resArray[resArray.length - 1]);
+    } else if (['who', 'person'].some(word => resArray.includes(word))) {
+      handleFaceDetect();
+    } else if (
+      ['stop', 'terminate', 'end'].some(word => resArray.includes(word)) &&
+      ['speaker'].every(word => resArray.includes(word))
+    ) {
+      stopSpeaking();
+    } else {
+      speakText('Command not found, please try again!');
+    }
+  };
+
+  const handleListen = async () => {
+    try {
+      const res = await ObjectDetection.callListener();
+      executedCommand(res);
+      console.log(res);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const stopRecording = () => {
+    refCamera.stopRecording();
+  };
+
+  const handleRecord = async () => {
+    try {
+      const recordPromise = refCamera.recordAsync();
+
+      setTimeout(() => {
+        refCamera.stopRecording();
+      }, 2000);
+
+      const res = await recordPromise;
+      console.log(res.uri);
+      const ret = await ObjectDetection.detectObjectFromRecording(res.uri);
+      console.log(ret);
+      setObje(ret);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const handleFaceRecog = async name => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.saveFace(data.uri, name);
+        console.log(res);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const handleFaceDelete = async () => {
+    try {
+      const res = await ObjectDetection.deleteFace('personName');
+      console.log(res);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const handleFaceDetect = async () => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.detectFaces(data.uri);
+        console.log(res);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const detectText = async () => {
     try {
       const data = await refCamera.takePictureAsync();
@@ -62,58 +169,17 @@ const App = () => {
     }
   };
 
-  const handleStop = () => {
-    setDetect(false);
-    setView(false);
-  };
-
-  const executedCommand = res => {
-    switch (res.toLowerCase()) {
-      case 'start camera':
-        setView(true);
-        break;
-      case 'stop camera':
-        handleStop();
-        break;
-      case 'detect objects':
-        setDetect(true);
-        break;
-      case 'detect text':
-        detectText();
-        break;
-      default:
-        speakText('Command not found, please try again!');
-    }
-  };
-
-  const handleListen = async () => {
+  const detectObjects = async () => {
     try {
-      const res = await ObjectDetection.callListener();
-      executedCommand(res);
-      console.log(res);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  //const stopRecording = () => {
-  //refCamera.stopRecording();
-  //};
-
-  const handleRecord = async () => {
-    try {
-      //const recordPromise = refCamera.recordAsync();
-
-      //setTimeout(() => {
-      //refCamera.stopRecording();
-      //}, 1000);
-
-      //const res = await recordPromise;
-      //console.log(res.uri);
-      const ret = await ObjectDetection.detectObjectFromRecording(
-        'file:///storage/emulated/0/Movies/USBCamera/2024-04-18-01-08-16.mp4',
-      );
-      console.log(ret);
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.detectObjects(data.uri);
+        // const res = await uploadImage(data.uri);
+        console.log(res);
+        setObje(res);
+      } catch (e) {
+        console.log(e);
+      }
     } catch (e) {
       console.log(e);
     }
@@ -128,10 +194,22 @@ const App = () => {
     }
   };
 
+  const stopSpeaking = async () => {
+    try {
+      const res = await ObjectDetection.stopSpeaker();
+      console.log(res);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   return (
     <View style={[styles.container]}>
       <View style={[styles.headerText]}>
         <Text style={[styles.textStyles]}>SmartG</Text>
+        <View style={[styles.showAllBtn]}>
+          <Button title="Show" onPress={() => setShowAllBtns(prev => !prev)} />
+        </View>
       </View>
 
       <View style={[styles.contentContainer]}>
@@ -172,67 +250,71 @@ const App = () => {
                 ))}
               </View>
             </ScrollView>
-            <View style={[styles.functionalityButtons]}>
-              <View style={[hstyles.p2]}>
-                <Button title="Start" onPress={() => setView(true)} />
-              </View>
-              <View style={[hstyles.p2]}>
-                <Button
-                  title="Clear"
-                  onPress={() => setObje(['Objects', 'Detected', 'Here'])}
-                />
-              </View>
-              <View style={[hstyles.p2]}>
-                <Button title="Record" onPress={handleRecord} />
-              </View>
-              <View style={[hstyles.p2]}>
-                {/* <Button title="Stop" onPress={stopRecording} /> */}
-                <IconButton
-                  icon="camera"
-                  iconColor={MD3Colors.error50}
-                  size={20}
-                  onPress={() => console.log('Pressed')}
-                />
-              </View>
-            </View>
           </View>
 
-          <View style={[styles.functionalityContainer]}>
-            <Pressable onPress={handleListen} style={[styles.listenButton]}>
-              <Text
-                style={[
-                  hstyles.textUpper,
-                  hstyles.textLarge,
-                  hstyles.textBold,
-                  hstyles.textCenter,
-                  hstyles.textLight,
-                ]}>
-                Listen
-              </Text>
-            </Pressable>
-            {/* <View style={[hstyles.p2, styles.functionalityButtons]}>
-              <View style={[hstyles.p2]}>
-                <Button title="Start" onPress={() => setView(true)} />
+          <View style={[!showAllBtns && styles.functionalityContainer]}>
+            {!showAllBtns ? (
+              <Pressable onPress={handleListen} style={[styles.listenButton]}>
+                <Text
+                  style={[
+                    hstyles.textUpper,
+                    hstyles.textLarge,
+                    hstyles.textBold,
+                    hstyles.textCenter,
+                    hstyles.textLight,
+                  ]}>
+                  Listen
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={[hstyles.p2, styles.functionalityButtons]}>
+                <View style={[hstyles.p2]}>
+                  <Button title="Start" onPress={() => setView(true)} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Stop" onPress={stopRecording} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Listen" onPress={handleListen} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button
+                    title="Clear"
+                    onPress={() => setObje(['Objects', 'Detected', 'Here'])}
+                  />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Detect" onPress={detectObjects} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Detect2" onPress={() => setDetect(true)} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Text" onPress={() => detectText()} />
+                </View>
+                {/*<View style={[hstyles.p2]}>
+                  <Button title="Record" onPress={handleRecord} />
+                </View>*/}
+                <View style={[hstyles.p2]}>
+                  <Button title="Save Face" onPress={handleFaceRecog} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Det Face" onPress={handleFaceDetect} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Del Face" onPress={handleFaceDelete} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Stop Speak" onPress={stopSpeaking} />
+                </View>
+                {/*<View style={[hstyles.p2]}>
+                  <Button
+                    title="Speak"
+                    onPress={() => speakText('May the force, be with you!')}
+                  />
+                </View>*/}
               </View>
-              <View style={[hstyles.p2]}>
-                <Button title="Stop" onPress={handleStop} />
-              </View>
-              <View style={[hstyles.p2]}>
-                <Button title="Listen" onPress={handleListen} />
-              </View>
-              <View style={[hstyles.p2]}>
-                <Button
-                  title="Speak"
-                  onPress={() => speakText('May the force, be with you!')}
-                />
-              </View>
-              <View style={[hstyles.p2]}>
-                <Button title="Detect" onPress={() => setDetect(true)} />
-              </View>
-              <View style={[hstyles.p2]}>
-                <Button title="Text" onPress={() => detectText()} />
-              </View>
-            </View> */}
+            )}
           </View>
         </View>
       </View>

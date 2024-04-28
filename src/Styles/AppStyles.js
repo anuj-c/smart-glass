@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
   resultView: {
     marginTop: 10,
     paddingHorizontal: 30,
+    paddingBottom: 10,
   },
   resultTextContainer: {
     display: 'flex',
@@ -93,6 +94,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: 'red',
     zIndex: 100,
+  },
+  showAllBtn: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
   },
 });
 

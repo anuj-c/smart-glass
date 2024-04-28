@@ -10,6 +10,7 @@ const layoutHelpers = {
   alignCenter: {alignItems: 'center'},
   alignStart: {alignItems: 'flex-start'},
   alignEnd: {alignItems: 'flex-end'},
+  pabsolute: {position: 'absolute'},
 };
 
 const marginHelpers = {

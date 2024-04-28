@@ -65,3 +65,5 @@ yarn-error.log
 # testing
 /coverage
 .vscode/
+
+android/app/src/main/assets/facenet.tflite

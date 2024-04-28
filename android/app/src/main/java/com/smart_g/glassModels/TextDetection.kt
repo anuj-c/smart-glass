@@ -9,10 +9,10 @@ import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
-class TextDetection(context: Context) {
+class TextDetection(val context: Context) {
   private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-  fun detect(context: Context, image: InputImage, callback: (Text) -> Unit) {
+  fun detect(image: InputImage, callback: (Text) -> Unit) {
     recognizer.process(image)
       .addOnSuccessListener { visionText ->
         callback(visionText)
