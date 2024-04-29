@@ -3,16 +3,11 @@
  */
 import React from 'react';
 import {AppRegistry} from 'react-native';
-import {PaperProvider} from 'react-native-paper';
 import App from './src/App';
 import {name as appName} from './app.json';
 
 export default function Main() {
-  return (
-    <PaperProvider>
-      <App />
-    </PaperProvider>
-  );
+  return <App />;
 }
 
 AppRegistry.registerComponent(appName, () => Main);

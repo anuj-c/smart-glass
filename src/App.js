@@ -52,7 +52,7 @@ const App = () => {
   };
 
   const executedCommand = res => {
-    const resArray = res.split(' ');
+    const resArray = res.toLowerCase().split(' ');
     setObje(resArray);
     console.log(resArray);
     if (resArray.includes('start')) {
@@ -64,12 +64,17 @@ const App = () => {
       handleStop();
     } else if (resArray.includes('text')) {
       detectText();
-    } else if (['detect', 'objects'].every(word => resArray.includes(word))) {
-      //handleRecord();
+    } else if (['medicine'].every(word => resArray.includes(word))) {
+      detectMedicineName();
+    } else if (
+      ['headline', 'headlines'].some(word => resArray.includes(word))
+    ) {
+      detectHeadline();
+    } else if (
+      ['detect'].every(word => resArray.includes(word)) &&
+      ['object', 'objects'].some(word => resArray.includes(word))
+    ) {
       detectObjects();
-    } else if (['is', 'there'].every(word => resArray.includes(word))) {
-      // TODO: write appropriate function here
-      handleRecord();
     } else if (resArray.includes('remember')) {
       handleFaceRecog(resArray[resArray.length - 1]);
     } else if (['who', 'person'].some(word => resArray.includes(word))) {
@@ -79,6 +84,14 @@ const App = () => {
       ['speaker'].every(word => resArray.includes(word))
     ) {
       stopSpeaking();
+    } else if (['currency', 'money'].some(word => resArray.includes(word))) {
+      detectCurrency();
+    } else if (['locate'].some(word => resArray.includes(word))) {
+      locateObject(resArray[resArray.length - 1]);
+    } else if (['is', 'there'].every(word => resArray.includes(word))) {
+      findTheObject(resArray[2]);
+    } else if (['many', 'people'].some(word => resArray.includes(word))) {
+      findNumPeople();
     } else {
       speakText('Command not found, please try again!');
     }
@@ -122,6 +135,7 @@ const App = () => {
       try {
         const res = await ObjectDetection.saveFace(data.uri, name);
         console.log(res);
+        setObje([res]);
       } catch (e) {
         console.log(e);
       }
@@ -145,6 +159,7 @@ const App = () => {
       try {
         const res = await ObjectDetection.detectFaces(data.uri);
         console.log(res);
+        setObje([res]);
       } catch (e) {
         console.log(e);
       }
@@ -160,7 +175,36 @@ const App = () => {
         const res = await ObjectDetection.detectText(data.uri);
         console.log(res);
         setObje([res]);
-        speakText(res);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const detectMedicineName = async () => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.detectMedicineName(data.uri);
+        console.log(res);
+        setObje([res]);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const detectHeadline = async () => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.detectHeadline(data.uri);
+        console.log(res);
+        setObje([res]);
       } catch (e) {
         console.log(e);
       }
@@ -177,6 +221,67 @@ const App = () => {
         // const res = await uploadImage(data.uri);
         console.log(res);
         setObje(res);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const locateObject = async objectName => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.locateObject(data.uri, objectName);
+        console.log(res);
+        setObje([res]);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const findTheObject = async objectName => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.findTheObject(data.uri, objectName);
+        console.log(res);
+        setObje([res]);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const findNumPeople = async () => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.findNumPeople(data.uri);
+        console.log(res);
+        setObje([res]);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const detectCurrency = async () => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        console.log(data.uri);
+        const res = await ObjectDetection.detectCurrency(data.uri);
+        console.log(res);
+        setObje([res]);
       } catch (e) {
         console.log(e);
       }
@@ -306,6 +411,9 @@ const App = () => {
                 </View>
                 <View style={[hstyles.p2]}>
                   <Button title="Stop Speak" onPress={stopSpeaking} />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button title="Currency" onPress={detectCurrency} />
                 </View>
                 {/*<View style={[hstyles.p2]}>
                   <Button

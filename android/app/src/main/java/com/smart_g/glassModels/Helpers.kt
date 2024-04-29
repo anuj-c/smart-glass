@@ -2,26 +2,31 @@ package com.smart_g.glassModels
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.RectF
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.util.Log
 import androidx.annotation.RequiresApi
+import com.google.mlkit.vision.common.InputImage
 import org.tensorflow.lite.support.image.TensorImage
 import java.io.File
 import java.io.FileOutputStream
 
 class Helpers (val context: Context){
   private val matrix = Matrix().apply {
-    postRotate(90f);
+    postRotate(90f)
   }
   private var image: Bitmap? = null
+  private val textDetector = TextDetection(context)
   @RequiresApi(Build.VERSION_CODES.P)
   fun uriToTensor(uri: String): TensorImage? {
     val imageUri = Uri.parse(uri)
@@ -55,6 +60,7 @@ class Helpers (val context: Context){
       fileOutputStream = FileOutputStream(imageFile)
       bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream)
       fileOutputStream.flush()
+      println("file://$picturesDirectory/$filename")
       return "file://$picturesDirectory/$filename"
     } catch (e: Exception) {
       e.printStackTrace()
@@ -112,7 +118,7 @@ class Helpers (val context: Context){
     return Bitmap.createBitmap(original, cropBounds.left, cropBounds.top, width, height)
   }
 
-  fun convertBitmapToTensorImage(bitmap: Bitmap): TensorImage {
+  private fun convertBitmapToTensorImage(bitmap: Bitmap): TensorImage {
     val compatibleBitmap = if (bitmap.config != Bitmap.Config.ARGB_8888) {
       bitmap.copy(Bitmap.Config.ARGB_8888, true)
     } else {
@@ -124,8 +130,8 @@ class Helpers (val context: Context){
     val scaleWidth = targetWidth.toFloat() / compatibleBitmap.width
     val scaleHeight = targetHeight.toFloat() / compatibleBitmap.height
     val matrix = Matrix().apply {
-      postScale(scaleWidth, scaleHeight);
-      postRotate(90f);
+      postScale(scaleWidth, scaleHeight)
+      postRotate(90f)
     }
     val resizedBitmap = Bitmap.createBitmap(compatibleBitmap, 0, 0, compatibleBitmap.width, compatibleBitmap.height, matrix, true)
 
@@ -158,5 +164,35 @@ class Helpers (val context: Context){
       e.printStackTrace()
       null
     }
+  }
+
+  fun detectLargestText(uri: String, callback: (String) -> Unit) {
+    try {
+      val imageUri = Uri.parse(uri)
+      val originalBitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imageUri))
+      val rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+      val rotatedInputImage = InputImage.fromBitmap(rotatedBitmap, 0)
+      textDetector.detect(rotatedInputImage) {resText ->
+        val largestTextBlock = resText.textBlocks.maxByOrNull { block ->
+          val firstLine = block.lines[0]
+          firstLine.boundingBox?.height()?.times(firstLine.boundingBox!!.width()) ?:0
+        }
+
+        val largestText = largestTextBlock?.text ?: "Text not found"
+        callback(largestText)
+      }
+    }catch(e: Exception) {
+      val str = "Error while detecting large text: $e"
+      Log.e("TAG", str)
+      callback(str)
+    }
+  }
+
+  fun rectF2Rect(bBox1: RectF?): Rect? {
+    if (bBox1 == null) return null
+    return Rect(
+      bBox1.left.toInt(), bBox1.top.toInt(), bBox1.right.toInt(),
+      bBox1.bottom.toInt()
+    )
   }
 }

@@ -51,7 +51,7 @@ class MainActivity : ReactActivity() {
       usbReceiver = object : BroadcastReceiver() {
         @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         override fun onReceive(context: Context, intent: Intent) {
-          Permissions.cameraPermission(permissionIntent, intent, context, actionUsbPermission, usbManager)
+          Permissions.cameraPermission(permissionIntent, intent, actionUsbPermission, usbManager)
         }
       }
 

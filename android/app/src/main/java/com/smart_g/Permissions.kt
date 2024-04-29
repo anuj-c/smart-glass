@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi
 
 object Permissions {
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-  fun cameraPermission(permissionIntent: PendingIntent, intent: Intent, context: Context, actionUsbPermission: String, usbManager: UsbManager) {
+  fun cameraPermission(permissionIntent: PendingIntent, intent: Intent, actionUsbPermission: String, usbManager: UsbManager) {
     Log.d("TAG", "BroadcastReceiver onReceive")
     try{
       when (intent.action) {
