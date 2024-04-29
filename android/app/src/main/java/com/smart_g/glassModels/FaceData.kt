@@ -142,7 +142,7 @@ class FaceData(val context: Context) {
       extractedFaces.forEach {face->
         val currentFaceFloatArray = getFaceNetEmbedding(face)
         val curName = isFaceInDB(currentFaceFloatArray, allFacesInDb)
-        detectedFacesPrediction.add(curName)
+        if (curName != "") detectedFacesPrediction.add(curName)
       }
 
       callback("success", "${extractedFaces.size}", detectedFacesPrediction)

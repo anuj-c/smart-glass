@@ -230,14 +230,11 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
         audioClass.speakText(msg)
         promise.resolve(msg)
       }else{
-        var numFaceRecognised = 0
-        detectedNames.forEach{
-          if(it != "") numFaceRecognised++
-        }
+        val numFaceRecognised = detectedNames.size
 
-        if(numFaceRecognised == 0) {
-          audioClass.speakText("No faces recognised. Please try again.")
-          promise.resolve("No faces recognised. Please try again.")
+        if(msg.toInt() == 0) {
+          audioClass.speakText("No faces detected. Please try again.")
+          promise.resolve("No faces detected. Please try again.")
         }else {
           var strToSpeak = ""
           strToSpeak += "$numFaceRecognised people recognised. "
@@ -307,7 +304,8 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   fun deleteFace(name: String, promise: Promise) {
     try{
       databaseUtil.deleteFaceOf(name)
-      promise.resolve("Deleted Successfully")
+      audioClass.speakText("Deleted data of $name successfully")
+      promise.resolve("Deleted data of $name successfully")
     } catch (e: Exception) {
       println("Error occurred: $e")
       promise.reject(e)

@@ -51,6 +51,16 @@ const App = () => {
     setView(false);
   };
 
+  const joinAfterAs = array => {
+    const index = array.indexOf('as');
+
+    if (index !== -1 && index < array.length - 1) {
+      return array.slice(index + 1).join(' ');
+    }
+
+    return '';
+  };
+
   const executedCommand = res => {
     const resArray = res.toLowerCase().split(' ');
     setObje(resArray);
@@ -76,7 +86,16 @@ const App = () => {
     ) {
       detectObjects();
     } else if (resArray.includes('remember')) {
-      handleFaceRecog(resArray[resArray.length - 1]);
+      const nameToSave = joinAfterAs(resArray);
+      if (nameToSave === '') {
+        speakText('Name was unclear. Please say the name again.');
+        setTimeout(async () => {
+          const justName = await ObjectDetection.callListener();
+          handleFaceRecog(justName.toLowerCase());
+        }, 2000);
+      } else {
+        handleFaceRecog(nameToSave.toLowerCase());
+      }
     } else if (['who', 'person'].some(word => resArray.includes(word))) {
       handleFaceDetect();
     } else if (
@@ -92,6 +111,8 @@ const App = () => {
       findTheObject(resArray[2]);
     } else if (['many', 'people'].some(word => resArray.includes(word))) {
       findNumPeople();
+    } else if (['delete'].some(word => resArray.includes(word))) {
+      handleFaceDelete(resArray[resArray.length - 1]);
     } else {
       speakText('Command not found, please try again!');
     }
@@ -144,9 +165,9 @@ const App = () => {
     }
   };
 
-  const handleFaceDelete = async () => {
+  const handleFaceDelete = async personName => {
     try {
-      const res = await ObjectDetection.deleteFace('personName');
+      const res = await ObjectDetection.deleteFace(personName);
       console.log(res);
     } catch (e) {
       console.log(e);
