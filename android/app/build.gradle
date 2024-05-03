@@ -130,6 +130,7 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.4'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'org.tensorflow:tensorflow-android:1.13.1'
+    implementation 'commons-codec:commons-codec:1.15'
 
     // To recognize Latin script
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.0'

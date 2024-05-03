@@ -67,3 +67,4 @@ yarn-error.log
 .vscode/
 
 android/app/src/main/assets/facenet.tflite
+android/app/src/main/assets/index.android.bundle

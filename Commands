@@ -1,0 +1,70 @@
+'start'
+
+['stop', 'terminate', 'end'].some && ['camera'].every
+
+'text'
+
+['medicine'].every
+
+['headline', 'headlines'].some
+
+['detect'].every && ['object', 'objects'].some
+
+'remember'
+
+['who', 'person'].some
+
+['stop', 'terminate', 'end'].some && ['speaker'].every
+
+['currency', 'money'].some
+
+['locate'].some
+
+['is', 'there'].every
+
+['many', 'people'].some
+
+['delete'].some
+
+Tokens: ['detect', 'the', 'objects', 'in', 'front']
+Lemmatized Tokens: ['detect', 'the', 'object', 'in', 'front']
+
+Tokens: ['start', 'the', 'camera']
+Lemmatized Tokens: ['start', 'the', 'camera']
+
+Tokens: ['stop', 'the', 'camera']
+Lemmatized Tokens: ['stop', 'the', 'camera']
+
+Tokens: ['detect', 'the', 'text']
+Lemmatized Tokens: ['detect', 'the', 'text']
+
+Tokens: ['read', 'the', 'medicine', 'name']
+Lemmatized Tokens: ['read', 'the', 'medicine', 'name']
+
+Tokens: ['read', 'the', 'headlines']
+Lemmatized Tokens: ['read', 'the', 'headline']
+
+Tokens: ['remember', 'the', 'person', 'as', 'mutthu', 'swami']
+Lemmatized Tokens: ['remember', 'the', 'person', 'a', 'mutthu', 'swami']
+
+Tokens: ['who', 'is', 'the', 'person', 'in', 'front', 'of', 'me']
+Lemmatized Tokens: ['who', 'be', 'the', 'person', 'in', 'front', 'of', 'me']
+
+Tokens: ['terminate', 'the', 'camera']
+Lemmatized Tokens: ['terminate', 'the', 'camera']
+
+Tokens: ['detect', 'the', 'money']
+Lemmatized Tokens: ['detect', 'the', 'money']
+
+Tokens: ['locate', 'the', 'bottle']
+Lemmatized Tokens: ['locate', 'the', 'bottle']
+
+Tokens: ['is', 'there', 'a', 'bottle', 'in', 'front', 'of', 'me']
+Lemmatized Tokens: ['be', 'there', 'a', 'bottle', 'in', 'front', 'of', 'me']
+
+Tokens: ['how', 'many', 'people', 'are', 'in', 'front']
+Lemmatized Tokens: ['how', 'many', 'people', 'be', 'in', 'front']
+
+Tokens: ['delete', 'mutthu', 'swami']
+Lemmatized Tokens: ['delete', 'mutthu', 'swami']
+

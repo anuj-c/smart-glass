@@ -22,19 +22,6 @@ class Detector(val context: Context) {
     context, modelFile, options
   )
 
-  private fun isMemoryAvailable(context: Context): Boolean {
-    val requiredMemoryInMB = 450L
-    val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    val memoryInfo = ActivityManager.MemoryInfo()
-    activityManager.getMemoryInfo(memoryInfo)
-    val availableMemoryInBytes = memoryInfo.availMem
-
-//    Log.d("TAG", "Memory available: ${availableMemoryInBytes / (1024 * 1024)}")
-
-    val requiredMemoryInBytes = requiredMemoryInMB * 1024 * 1024
-    return availableMemoryInBytes >= requiredMemoryInBytes
-  }
-
   @RequiresApi(Build.VERSION_CODES.P)
   fun detectObjects(tensorImage: TensorImage?): MutableList<Detection> {
     val results = detector.detect(tensorImage)
@@ -81,4 +68,31 @@ class Detector(val context: Context) {
 
     return "$verticalPosition-$horizontalPosition"
   }
+
+  fun filterByThreshold(listOfMaps: List<Map<String, Int>>, minOccurrences: Int = 1): Map<String, Int> {
+    val keyValues = mutableMapOf<String, MutableList<Int>>()
+    listOfMaps.forEach { map ->
+      map.forEach { (key, value) ->
+        keyValues.getOrPut(key) { mutableListOf() }.add(value)
+      }
+    }
+    return keyValues.mapValues { (_, values) ->
+      values.sortedDescending().let {
+        if (it.size >= minOccurrences) it[minOccurrences - 1] else null
+      }
+    }
+      .filter { (key, threshold) ->
+        threshold != null && keyValues[key]!!.count { value -> value >= threshold } >= minOccurrences
+      }
+      .mapValues { it.value!! }
+  }
+
+  fun describeObjects(map: Map<String, Int>): String {
+    val parts = map.map { (key, value) ->
+      "$value ${if (value == 1) key else "${key}s"}"
+    }
+
+    return "Objects detected are ${parts.joinToString(", ")}"
+  }
+
 }

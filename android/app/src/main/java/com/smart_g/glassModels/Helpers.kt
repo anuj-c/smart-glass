@@ -89,24 +89,6 @@ class Helpers (val context: Context){
     }
   }
 
-  fun filterByThreshold(listOfMaps: List<Map<String, Int>>, minOccurrences: Int = 1): Map<String, Int> {
-    val keyValues = mutableMapOf<String, MutableList<Int>>()
-    listOfMaps.forEach { map ->
-      map.forEach { (key, value) ->
-        keyValues.getOrPut(key) { mutableListOf() }.add(value)
-      }
-    }
-    return keyValues.mapValues { (_, values) ->
-      values.sortedDescending().let {
-        if (it.size >= minOccurrences) it[minOccurrences - 1] else null
-      }
-    }
-      .filter { (key, threshold) ->
-        threshold != null && keyValues[key]!!.count { value -> value >= threshold } >= minOccurrences
-      }
-      .mapValues { it.value!! }
-  }
-
   fun cropBitmap(original: Bitmap, cropBounds: Rect): Bitmap {
     val width = cropBounds.width().coerceAtMost(original.width - cropBounds.left)
     val height = cropBounds.height().coerceAtMost(original.height - cropBounds.top)
@@ -138,14 +120,6 @@ class Helpers (val context: Context){
     return TensorImage.fromBitmap(resizedBitmap)
   }
 
-  fun describeObjects(map: Map<String, Int>): String {
-    val parts = map.map { (key, value) ->
-      "$value ${if (value == 1) key else "${key}s"}"
-    }
-
-    return "Objects found are ${parts.joinToString(", ")}"
-  }
-
   fun drawBoxAndSaveImage(bitmap: Bitmap, faceBox: Rect?, imageName: String): String? {
     if(faceBox == null) return null
     val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
@@ -163,28 +137,6 @@ class Helpers (val context: Context){
     } catch (e: Exception) {
       e.printStackTrace()
       null
-    }
-  }
-
-  fun detectLargestText(uri: String, callback: (String) -> Unit) {
-    try {
-      val imageUri = Uri.parse(uri)
-      val originalBitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(imageUri))
-      val rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
-      val rotatedInputImage = InputImage.fromBitmap(rotatedBitmap, 0)
-      textDetector.detect(rotatedInputImage) {resText ->
-        val largestTextBlock = resText.textBlocks.maxByOrNull { block ->
-          val firstLine = block.lines[0]
-          firstLine.boundingBox?.height()?.times(firstLine.boundingBox!!.width()) ?:0
-        }
-
-        val largestText = largestTextBlock?.text ?: "Text not found"
-        callback(largestText)
-      }
-    }catch(e: Exception) {
-      val str = "Error while detecting large text: $e"
-      Log.e("TAG", str)
-      callback(str)
     }
   }
 

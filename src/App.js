@@ -61,31 +61,35 @@ const App = () => {
     return '';
   };
 
+  const isMatch = (resArray, someArr = [], everyArr = []) => {
+    if (
+      someArr.some(word => resArray.includes(word)) &&
+      everyArr.every(word => resArray.includes(word))
+    ) {
+      return true;
+    }
+    return false;
+  };
+
   const executedCommand = res => {
     const resArray = res.toLowerCase().split(' ');
     setObje(resArray);
     console.log(resArray);
-    if (resArray.includes('start')) {
+    if (isMatch(resArray, ['start'])) {
       setView(true);
-    } else if (
-      ['stop', 'terminate', 'end'].some(word => resArray.includes(word)) &&
-      ['camera'].every(word => resArray.includes(word))
-    ) {
+    } else if (isMatch(resArray, ['stop', 'terminate', 'end'], ['camera'])) {
       handleStop();
-    } else if (resArray.includes('text')) {
+    } else if (isMatch(resArray, ['text'])) {
       detectText();
-    } else if (['medicine'].every(word => resArray.includes(word))) {
+    } else if (isMatch(resArray, ['medicine'])) {
       detectMedicineName();
-    } else if (
-      ['headline', 'headlines'].some(word => resArray.includes(word))
-    ) {
+    } else if (isMatch(resArray, ['expiry', 'date'])) {
+      detectExpiry();
+    } else if (isMatch(resArray, ['headline', 'headlines'])) {
       detectHeadline();
-    } else if (
-      ['detect'].every(word => resArray.includes(word)) &&
-      ['object', 'objects'].some(word => resArray.includes(word))
-    ) {
+    } else if (isMatch(resArray, ['object', 'objects'], ['detect'])) {
       detectObjects();
-    } else if (resArray.includes('remember')) {
+    } else if (isMatch(resArray, ['remember'])) {
       const nameToSave = joinAfterAs(resArray);
       if (nameToSave === '') {
         speakText('Name was unclear. Please say the name again.');
@@ -96,25 +100,31 @@ const App = () => {
       } else {
         handleFaceRecog(nameToSave.toLowerCase());
       }
-    } else if (['who', 'person'].some(word => resArray.includes(word))) {
+    } else if (isMatch(resArray, ['who', 'person'])) {
       handleFaceDetect();
-    } else if (
-      ['stop', 'terminate', 'end'].some(word => resArray.includes(word)) &&
-      ['speaker'].every(word => resArray.includes(word))
-    ) {
+    } else if (isMatch(resArray, ['stop', 'terminate', 'end'], ['speaker'])) {
       stopSpeaking();
-    } else if (['currency', 'money'].some(word => resArray.includes(word))) {
+    } else if (isMatch(resArray, ['currency', 'money'])) {
       detectCurrency();
-    } else if (['locate'].some(word => resArray.includes(word))) {
+    } else if (isMatch(resArray, ['locate'])) {
       locateObject(resArray[resArray.length - 1]);
-    } else if (['is', 'there'].every(word => resArray.includes(word))) {
+    } else if (isMatch(resArray, ['is'], ['there'])) {
       findTheObject(resArray[2]);
-    } else if (['many', 'people'].some(word => resArray.includes(word))) {
+    } else if (isMatch(resArray, ['many', 'people'])) {
       findNumPeople();
-    } else if (['delete'].some(word => resArray.includes(word))) {
-      handleFaceDelete(resArray[resArray.length - 1]);
+    } else if (isMatch(resArray, ['delete'])) {
+      handleFaceDelete(resArray.slice(1).join(' '));
     } else {
       speakText('Command not found, please try again!');
+    }
+  };
+
+  const findSimilarSound = async words => {
+    try {
+      const res = await ObjectDetection.findSimilarSound(words);
+      console.log(res);
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -209,6 +219,21 @@ const App = () => {
       const data = await refCamera.takePictureAsync();
       try {
         const res = await ObjectDetection.detectMedicineName(data.uri);
+        console.log(res);
+        setObje([res]);
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const detectExpiry = async () => {
+    try {
+      const data = await refCamera.takePictureAsync();
+      try {
+        const res = await ObjectDetection.detectExpiry(data.uri);
         console.log(res);
         setObje([res]);
       } catch (e) {

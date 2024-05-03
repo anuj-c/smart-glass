@@ -40,11 +40,11 @@ class Currency2(val context: Context) {
       var strToSpeak = ""
       for(i in 0..6){
         if(statusArray[i])
-          strToSpeak += "Found bill of ${revCurrencyMap[i]} rupees."
+          strToSpeak += "Detected bill of ${revCurrencyMap[i]} rupees."
       }
 
       if(!found)
-        strToSpeak += "No bills found"
+        strToSpeak += "No bills detected"
       callback(strToSpeak)
     }
   }

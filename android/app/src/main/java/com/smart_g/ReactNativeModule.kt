@@ -42,12 +42,11 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   private val helper = Helpers(reactApplicationContext)
   private val currencyUtil = Currency2(reactApplicationContext)
 
+  private var image: Bitmap? = null
+  private var tensorImage: TensorImage? = null
   private val matrix = Matrix().apply {
     postRotate(90f)
   }
-
-  private var image: Bitmap? = null
-  private var tensorImage: TensorImage? = null
 
   @ReactMethod
   fun saveImageFromUri(uri: String, outputFileName: String) {
@@ -96,7 +95,7 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
         }
       }
 
-      val strToSpeak = helper.describeObjects(data)
+      val strToSpeak = detector.describeObjects(data)
       audioClass.speakText(strToSpeak)
 
       val ret = Arguments.createArray()
@@ -113,6 +112,62 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
     } catch (e: Exception) {
       Log.e("TAG", "Error in detecting objects", e)
       promise.reject(e)
+    }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.P)
+  @ReactMethod
+  fun locateObject(uri: String, objectName: String, promise: Promise) {
+    try{
+      tensorImage = helper.uriToTensor(uri)
+      val tensorImage2 = helper.uriToTensor(uri)
+      val results = detector.detectObjects2(tensorImage, listOf(objectName))
+      var strToSpeak = ""
+      for ((it, result) in results.withIndex()) {
+        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox), "image$it.jpg")
+        val bBoxes = result.boundingBox
+        strToSpeak += "Object is located at ${detector.getObjectPosition(bBoxes)}. "
+      }
+      strToSpeak = "${results.size} instances of $objectName detected. $strToSpeak."
+      audioClass.speakText(strToSpeak)
+      promise.resolve(strToSpeak)
+    }catch(e: Exception) {
+      Log.e("TAG", "$e")
+    }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.P)
+  @ReactMethod
+  fun findTheObject(uri: String, objectName: String, promise: Promise) {
+    try{
+      tensorImage = helper.uriToTensor(uri)
+      val tensorImage2 = helper.uriToTensor(uri)
+      val results = detector.detectObjects2(tensorImage, listOf(objectName))
+      for ((it, result) in results.withIndex()) {
+        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox), "image$it.jpg")
+      }
+      val strToSpeak = "${results.size} instances of $objectName detected."
+
+      audioClass.speakText(strToSpeak)
+      promise.resolve(strToSpeak)
+    }catch(e: Exception) {
+      Log.e("TAG", "$e")
+    }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.P)
+  @ReactMethod
+  fun findNumPeople(uri: String, promise: Promise) {
+    try{
+      tensorImage = helper.uriToTensor(uri)
+      val results = detector.detectObjects2(tensorImage, listOf("person"))
+      val cntObjects = results.size
+      val strToSpeak = if(cntObjects <= 1) "$cntObjects person detected."
+      else "$cntObjects people detected."
+      audioClass.speakText(strToSpeak)
+      promise.resolve(strToSpeak)
+    }catch(e: Exception) {
+      Log.e("TAG", "$e")
     }
   }
 
@@ -143,8 +198,8 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
 
         dataArr.add(data)
       }
-      val processedObjects = helper.filterByThreshold(dataArr)
-      val strToSpeak = helper.describeObjects(processedObjects)
+      val processedObjects = detector.filterByThreshold(dataArr)
+      val strToSpeak = detector.describeObjects(processedObjects)
       audioClass.speakText(strToSpeak)
       val retArr = Arguments.createArray()
 
@@ -180,7 +235,7 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   @ReactMethod
   fun detectMedicineName(uri: String, promise: Promise) {
     try {
-      helper.detectLargestText(uri) { largestText ->
+      textDetector.detectLargestText(uri) { largestText ->
         audioClass.speakText("Medicine name detected is: $largestText")
         promise.resolve("Medicine name detected is: $largestText")
       }
@@ -192,7 +247,7 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   @ReactMethod
   fun detectHeadline(uri: String, promise: Promise) {
     try {
-      helper.detectLargestText(uri) { largestText ->
+      textDetector.detectLargestText(uri) { largestText ->
         audioClass.speakText("Detected headline is: $largestText")
         promise.resolve("Detected headline is: $largestText")
       }
@@ -201,25 +256,31 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
     }
   }
 
+  @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
-  fun callSpeaker(text: String) {
-    audioClass.speakText(text)
-    Log.d("TAG", "Called it")
-  }
-
-  @ReactMethod
-  fun callListener(promise: Promise) {
-    audioClass.stopSpeaking()
-    audioClass.setTextRecognitionCallback { recognizedText ->
-      Log.d("TAG", "Recognized text: $recognizedText")
-      promise.resolve(recognizedText)
+  fun detectCurrency(uri: String, promise: Promise) {
+    currencyUtil.detectCurrency(uri) {
+      audioClass.speakText(it)
+      promise.resolve(it)
     }
-    audioClass.startListening()
   }
 
   @ReactMethod
-  fun stopSpeaker() {
-    audioClass.stopSpeaking()
+  fun detectExpiry(uri: String, promise: Promise) {
+    try {
+      val imageUri = Uri.parse(uri)
+      val originalBitmap = BitmapFactory.decodeStream(reactApplicationContext.contentResolver.openInputStream(imageUri))
+      val rotatedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
+      val rotatedInputImage = InputImage.fromBitmap(rotatedBitmap, 0)
+
+      textDetector.detectExpiry(rotatedInputImage) {resText ->
+        promise.resolve(resText)
+      }
+    }catch(e: Exception) {
+      val str = "Error while detecting large text: $e"
+      Log.e("TAG", str)
+      promise.reject(e)
+    }
   }
 
   @RequiresApi(Build.VERSION_CODES.P)
@@ -239,7 +300,7 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
           var strToSpeak = ""
           strToSpeak += "$numFaceRecognised people recognised. "
           if (numFaceRecognised != msg.toInt())
-            strToSpeak += "${msg.toInt() - numFaceRecognised} unknown faces found. "
+            strToSpeak += "${msg.toInt() - numFaceRecognised} unknown faces detected. "
           if (detectedNames.size > 0) {
             strToSpeak += if (detectedNames.size == 1)
               "The detected person is: "
@@ -312,67 +373,34 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
     }
   }
 
-  @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
-  fun detectCurrency(uri: String, promise: Promise) {
-    currencyUtil.detectCurrency(uri) {
-      audioClass.speakText(it)
-      promise.resolve(it)
-    }
+  fun callSpeaker(text: String) {
+    audioClass.speakText(text)
+    Log.d("TAG", "Called it")
   }
 
-  @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
-  fun locateObject(uri: String, objectName: String, promise: Promise) {
-    try{
-      tensorImage = helper.uriToTensor(uri)
-      val tensorImage2 = helper.uriToTensor(uri)
-      val results = detector.detectObjects2(tensorImage, listOf(objectName))
-      var strToSpeak = ""
-      for ((it, result) in results.withIndex()) {
-        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox), "image$it.jpg")
-        val bBoxes = result.boundingBox
-        strToSpeak += "Object is located at ${detector.getObjectPosition(bBoxes)}. "
-      }
-      strToSpeak = "${results.size} instances of $objectName found. $strToSpeak."
-      audioClass.speakText(strToSpeak)
-      promise.resolve(strToSpeak)
-    }catch(e: Exception) {
-      Log.e("TAG", "$e")
+  fun callListener(promise: Promise) {
+    audioClass.stopSpeaking()
+    audioClass.setTextRecognitionCallback { recognizedText ->
+      Log.d("TAG", "Recognized text: $recognizedText")
+      promise.resolve(recognizedText)
     }
+    audioClass.startListening()
   }
 
-  @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
-  fun findTheObject(uri: String, objectName: String, promise: Promise) {
-    try{
-      tensorImage = helper.uriToTensor(uri)
-      val tensorImage2 = helper.uriToTensor(uri)
-      val results = detector.detectObjects2(tensorImage, listOf(objectName))
-      for ((it, result) in results.withIndex()) {
-        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox), "image$it.jpg")
-      }
-      val strToSpeak = "${results.size} instances of $objectName found."
-
-      audioClass.speakText(strToSpeak)
-      promise.resolve(strToSpeak)
-    }catch(e: Exception) {
-      Log.e("TAG", "$e")
-    }
+  fun stopSpeaker() {
+    audioClass.stopSpeaking()
   }
 
-  @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
-  fun findNumPeople(uri: String, promise: Promise) {
+  fun findSimilarSound(word: String, promise: Promise) {
     try{
-      tensorImage = helper.uriToTensor(uri)
-      val results = detector.detectObjects2(tensorImage, listOf("person"))
-      val cntObjects = results.size
-      val strToSpeak = if(cntObjects <= 1) "$cntObjects person found."
-      else "$cntObjects people found."
-      audioClass.speakText(strToSpeak)
-      promise.resolve(strToSpeak)
-    }catch(e: Exception) {
+      val matches = audioClass.isPhoneticallySimilar(word)
+      println(matches)
+      promise.resolve(matches)
+    } catch (e: Exception) {
       Log.e("TAG", "$e")
     }
   }
