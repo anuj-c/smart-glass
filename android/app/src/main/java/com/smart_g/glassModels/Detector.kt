@@ -92,7 +92,7 @@ class Detector(val context: Context) {
       "$value ${if (value == 1) key else "${key}s"}"
     }
 
-    return "Objects detected are ${parts.joinToString(", ")}"
+    return parts.joinToString(", ")
   }
 
 }

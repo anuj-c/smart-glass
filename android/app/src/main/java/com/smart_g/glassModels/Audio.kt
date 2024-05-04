@@ -125,6 +125,10 @@ class Audio(val context: Context) {
     tts?.stop()
   }
 
+  fun isSpeaking(): Boolean? {
+    return tts?.isSpeaking
+  }
+
   fun isPhoneticallySimilar(word1: String): MutableList<String> {
     val doubleMetaphone = DoubleMetaphone()
     val matches = mutableListOf<String>()

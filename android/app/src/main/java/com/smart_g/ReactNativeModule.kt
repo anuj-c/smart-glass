@@ -13,6 +13,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableArray
 import com.google.mlkit.vision.common.InputImage
 import com.smart_g.glassModels.Audio
@@ -72,13 +73,10 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   fun detectObjects(uri: String, promise: Promise) {
     try {
       tensorImage = helper.uriToTensor(uri)
-      val tensorImage2 = helper.uriToTensor(uri)
-
       val results = detector.detectObjects(tensorImage)
 
       val data = mutableMapOf<String, Int>()
-      for ((it, result) in results.withIndex()) {
-        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox), "image$it.jpg")
+      for (result in results) {
         var maxConf = 0.0f
         var label = ""
         for (cats in result.categories) {
@@ -94,7 +92,8 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
         }
       }
 
-      val strToSpeak = detector.describeObjects(data)
+      var strToSpeak = detector.describeObjects(data)
+      strToSpeak = "Objects detected are $strToSpeak"
       audioClass.speakText(strToSpeak)
 
       val ret = Arguments.createArray()
@@ -119,16 +118,13 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   fun locateObject(uri: String, objectName: String, promise: Promise) {
     try{
       tensorImage = helper.uriToTensor(uri)
-      val tensorImage2 = helper.uriToTensor(uri)
       val results = detector.detectObjects2(tensorImage, listOf(objectName))
       var strToSpeak = ""
-      for ((it, result) in results.withIndex()) {
-        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox), "image$it.jpg")
+      for (result in results) {
         val bBoxes = result.boundingBox
         strToSpeak += "Object is located at ${detector.getObjectPosition(bBoxes)}. "
       }
       strToSpeak = "${results.size} instances of $objectName detected. $strToSpeak."
-      audioClass.speakText(strToSpeak)
       promise.resolve(strToSpeak)
     }catch(e: Exception) {
       Log.e("TAG", "$e")
@@ -140,15 +136,10 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   fun findTheObject(uri: String, objectName: String, promise: Promise) {
     try{
       tensorImage = helper.uriToTensor(uri)
-      val tensorImage2 = helper.uriToTensor(uri)
+      helper.saveBitmapToFile(tensorImage!!.bitmap)
       val results = detector.detectObjects2(tensorImage, listOf(objectName))
-      for ((it, result) in results.withIndex()) {
-        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox), "image$it.jpg")
-      }
-      val strToSpeak = "${results.size} instances of $objectName detected."
-
-      audioClass.speakText(strToSpeak)
-      promise.resolve(strToSpeak)
+      println(results.size)
+      promise.resolve(results.size)
     }catch(e: Exception) {
       Log.e("TAG", "$e")
     }
@@ -172,41 +163,44 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
 
   @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
-  fun detectObjectFromRecording(uri: String, promise: Promise) {
+  fun detectObjectsForTime(uri: String, objectNames: ReadableArray, promise: Promise) {
     try {
-      val videoUri = Uri.parse(uri)
-      val dataArr = mutableListOf<Map<String, Int>>()
-      for(i in 1..10){
-        val frameTime = i*200000L
-        tensorImage = helper.getTensorImageFromVideoUri(videoUri, frameTime)
-        // tensorImage = helper.uriToTensor(tensorUri)
-        val results = detector.detectObjects(tensorImage)
-        val data = mutableMapOf<String, Int>()
-        for (result in results) {
-          val cates = result.categories
-          for (cats in cates) {
-            val label = cats.label
-            println(label)
-            if (data.containsKey(label)) {
-              data[label] = data[label]!! + 1
-            } else {
-              data[label] = 1
-            }
+      tensorImage = helper.uriToTensor(uri)
+      val objectNamesRet: WritableArray = Arguments.createArray()
+      for (i in 0 until objectNames.size()) {
+        objectNamesRet.pushString(objectNames.getString(i))
+      }
+
+      val results = detector.detectObjects(tensorImage)
+
+      val data = mutableMapOf<String, Int>()
+      for (result in results) {
+        var maxConf = 0.0f
+        var label = ""
+        for (cats in result.categories) {
+          if(cats.score > maxConf) {
+            maxConf = cats.score
+            label = cats.label
           }
         }
-
-        dataArr.add(data)
+        if(helper.containsElement(objectNames, label)) continue
+        if (data.containsKey(label)) {
+          data[label] = data[label]!! + 1
+        } else {
+          data[label] = 1
+        }
       }
-      val processedObjects = detector.filterByThreshold(dataArr)
-      val strToSpeak = detector.describeObjects(processedObjects)
+
+      val strToSpeak = detector.describeObjects(data)
       audioClass.speakText(strToSpeak)
-      val retArr = Arguments.createArray()
 
-      for ((key, value) in processedObjects) {
-        retArr.pushString("$key-$value")
+      while(audioClass.isSpeaking()!!) {}
+
+      data.map {(key) ->
+        objectNamesRet.pushString(key)
       }
 
-      promise.resolve(retArr)
+      promise.resolve(objectNamesRet)
     }catch(e: Exception) {
       Log.e("TAG", "Error in detecting object from video")
     }

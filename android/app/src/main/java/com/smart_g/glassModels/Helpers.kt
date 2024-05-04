@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Environment
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.facebook.react.bridge.ReadableArray
 import com.google.mlkit.vision.common.InputImage
 import org.tensorflow.lite.support.image.TensorImage
 import java.io.File
@@ -47,7 +48,7 @@ class Helpers (val context: Context){
     image = image?.let { Bitmap.createBitmap(it, 0, 0, image!!.width, image!!.height, matrix, true) }
     return TensorImage.fromBitmap(image)
   }
-  private fun saveBitmapToFile(bitmap: Bitmap?, filename: String = "myimage.jpg"): String {
+  fun saveBitmapToFile(bitmap: Bitmap?, filename: String = "myimage.jpg"): String {
     if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
       return ""
     }
@@ -146,5 +147,14 @@ class Helpers (val context: Context){
       bBox1.left.toInt(), bBox1.top.toInt(), bBox1.right.toInt(),
       bBox1.bottom.toInt()
     )
+  }
+
+  fun containsElement(array: ReadableArray, elementToFind: String): Boolean {
+    for (i in 0 until array.size()) {
+      if (array.getString(i) == elementToFind) {
+        return true
+      }
+    }
+    return false
   }
 }

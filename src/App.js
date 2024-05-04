@@ -91,6 +91,8 @@ const App = () => {
       detectExpiry();
     } else if (isMatch(resArray, ['headline', 'headlines'])) {
       detectHeadline();
+    } else if (isMatch(resArray, ['object', 'objects'], ['detect', 'all'])) {
+      startIntervalForDetectObjects();
     } else if (isMatch(resArray, ['object', 'objects'], ['detect'])) {
       detectObjects();
     } else if (isMatch(resArray, ['remember'])) {
@@ -113,7 +115,11 @@ const App = () => {
     } else if (isMatch(resArray, ['locate'])) {
       locateObject(resArray[resArray.length - 1]);
     } else if (isMatch(resArray, ['is'], ['there'])) {
-      findTheObject(resArray[2]);
+      if (resArray[2] === 'a') {
+        findTheObject(resArray[3]);
+      } else {
+        findTheObject(resArray[2]);
+      }
     } else if (isMatch(resArray, ['many', 'people'])) {
       findNumPeople();
     } else if (isMatch(resArray, ['delete'])) {
@@ -263,6 +269,29 @@ const App = () => {
     }
   };
 
+  const startIntervalForDetectObjects = async () => {
+    let objectNames = [];
+    for (let i = 0; i < 5; i++) {
+      try {
+        const data = await refCamera.takePictureAsync();
+        try {
+          objectNames = await ObjectDetection.detectObjectsForTime(
+            data.uri,
+            objectNames,
+          );
+          console.log(objectNames);
+        } catch (e) {
+          console.log(e);
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    setObje(objectNames);
+    speakText('detected');
+  };
+
   const detectObjects = async () => {
     try {
       const data = await refCamera.takePictureAsync();
@@ -280,33 +309,52 @@ const App = () => {
   };
 
   const locateObject = async objectName => {
-    try {
-      const data = await refCamera.takePictureAsync();
+    let res = '';
+    for (let i = 0; i < 5; i++) {
       try {
-        const res = await ObjectDetection.locateObject(data.uri, objectName);
-        console.log(res);
-        setObje([res]);
+        const data = await refCamera.takePictureAsync();
+        try {
+          res = await ObjectDetection.locateObject(data.uri, objectName);
+          if (res[0] !== '0') {
+            break;
+          }
+          console.log(res);
+        } catch (e) {
+          console.log(e);
+        }
       } catch (e) {
         console.log(e);
       }
-    } catch (e) {
-      console.log(e);
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
+    speakText(res);
+    setObje([res]);
   };
 
   const findTheObject = async objectName => {
-    try {
-      const data = await refCamera.takePictureAsync();
+    console.log({objectName});
+    let count = 0;
+    for (let i = 0; i < 5; i++) {
       try {
-        const res = await ObjectDetection.findTheObject(data.uri, objectName);
-        console.log(res);
-        setObje([res]);
+        const data = await refCamera.takePictureAsync();
+        try {
+          console.log('here');
+          count = await ObjectDetection.findTheObject(data.uri, objectName);
+          console.log(count);
+          if (count > 0) {
+            break;
+          }
+        } catch (e) {
+          console.log(e);
+        }
       } catch (e) {
         console.log(e);
       }
-    } catch (e) {
-      console.log(e);
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
+    const strToSpeak = `${count} instance of ${objectName} detected.`;
+    speakText(strToSpeak);
+    setObje(strToSpeak);
   };
 
   const findNumPeople = async () => {
@@ -404,10 +452,13 @@ const App = () => {
           <View style={[!showAllBtns && styles.functionalityContainer]}>
             {!showAllBtns ? (
               <Pressable onPress={handleListen} style={[styles.listenButton]}>
-                <Image source={hearIcon} style={[styles.icon]} />
-                <Text style={[styles.listenButtonText, hstyles.ml3]}>
+                <Image
+                  source={hearIcon}
+                  style={[styles.icon, styles.hearIcon]}
+                />
+                {/*<Text style={[styles.listenButtonText, hstyles.ml3]}>
                   Listen
-                </Text>
+                </Text>*/}
               </Pressable>
             ) : (
               <View style={[hstyles.p2, styles.functionalityButtons]}>
@@ -430,7 +481,16 @@ const App = () => {
                   <Button title="Detect" onPress={detectObjects} />
                 </View>
                 <View style={[hstyles.p2]}>
-                  <Button title="Detect2" onPress={() => setDetect(true)} />
+                  <Button
+                    title="Detect Cont."
+                    onPress={() => setDetect(true)}
+                  />
+                </View>
+                <View style={[hstyles.p2]}>
+                  <Button
+                    title="Detect 5 sec"
+                    onPress={() => setDetect(true)}
+                  />
                 </View>
                 <View style={[hstyles.p2]}>
                   <Button title="Text" onPress={() => detectText()} />

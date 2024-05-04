@@ -25,6 +25,10 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
   },
+  hearIcon: {
+    width: 70,
+    height: 70,
+  },
   contentContainer: {
     flex: 1,
   },
@@ -47,6 +51,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 30,
     top: 10,
+    zIndex: 10,
   },
   camera: {
     width: 240,
