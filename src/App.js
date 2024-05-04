@@ -6,9 +6,13 @@ import {
   NativeModules,
   ScrollView,
   Pressable,
+  Image,
 } from 'react-native';
 import {UvcCamera} from 'react-native-uvc-camera';
 import {hstyles, styles} from './Styles';
+import controlImage from './Styles/Icons/controls.png';
+import googleGlass from './Styles/Icons/google-glasses.png';
+import hearIcon from './Styles/Icons/hear.png';
 
 const {ObjectDetection} = NativeModules;
 let refCamera = React.createRef();
@@ -119,14 +123,32 @@ const App = () => {
     }
   };
 
-  const findSimilarSound = async words => {
-    try {
-      const res = await ObjectDetection.findSimilarSound(words);
-      console.log(res);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // const findSimilarSound = async words => {
+  //   try {
+  //     const res = await ObjectDetection.findSimilarSound(words);
+  //     console.log(res);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
+  // const handleRecord = async () => {
+  //   try {
+  //     const recordPromise = refCamera.recordAsync();
+
+  //     setTimeout(() => {
+  //       refCamera.stopRecording();
+  //     }, 2000);
+
+  //     const res = await recordPromise;
+  //     console.log(res.uri);
+  //     const ret = await ObjectDetection.detectObjectFromRecording(res.uri);
+  //     console.log(ret);
+  //     setObje(ret);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
 
   const handleListen = async () => {
     try {
@@ -140,24 +162,6 @@ const App = () => {
 
   const stopRecording = () => {
     refCamera.stopRecording();
-  };
-
-  const handleRecord = async () => {
-    try {
-      const recordPromise = refCamera.recordAsync();
-
-      setTimeout(() => {
-        refCamera.stopRecording();
-      }, 2000);
-
-      const res = await recordPromise;
-      console.log(res.uri);
-      const ret = await ObjectDetection.detectObjectFromRecording(res.uri);
-      console.log(ret);
-      setObje(ret);
-    } catch (e) {
-      console.log(e);
-    }
   };
 
   const handleFaceRecog = async name => {
@@ -357,14 +361,18 @@ const App = () => {
   return (
     <View style={[styles.container]}>
       <View style={[styles.headerText]}>
-        <Text style={[styles.textStyles]}>SmartG</Text>
-        <View style={[styles.showAllBtn]}>
-          <Button title="Show" onPress={() => setShowAllBtns(prev => !prev)} />
+        <View style={[hstyles.flexRow]}>
+          <Image source={googleGlass} style={[styles.icon]} />
+          <Text style={[styles.textStyles, hstyles.ml3]}>Smart Glass</Text>
         </View>
+        <Pressable onPress={() => setShowAllBtns(prev => !prev)}>
+          <Image source={controlImage} style={[styles.icon]} />
+        </Pressable>
       </View>
 
       <View style={[styles.contentContainer]}>
         <View style={[styles.cameraOuterContainer]}>
+          <Text style={[styles.cameraContainerText]}>UVC Camera</Text>
           {view && (
             <View style={[styles.cameraContainer]}>
               <UvcCamera
@@ -381,23 +389,13 @@ const App = () => {
 
         <View style={[styles.resultContainer]}>
           <View style={[styles.displayResContainer]}>
-            <Text
-              style={[
-                hstyles.textCenter,
-                hstyles.textDark,
-                hstyles.textLarge,
-                hstyles.textBold,
-                hstyles.textUpper,
-                hstyles.m1,
-              ]}>
-              Detection
-            </Text>
+            <Text style={[styles.detectionText]}>Detection</Text>
             <ScrollView contentContainerStyle={[styles.resultView]}>
               <View style={[styles.resultTextContainer]}>
                 {obje.map((obj, index) => (
-                  <Text key={index} style={[styles.resultText]}>
-                    {obj}
-                  </Text>
+                  <View key={index} style={[styles.resultMapView]}>
+                    <Text style={[styles.resultText]}>{obj}</Text>
+                  </View>
                 ))}
               </View>
             </ScrollView>
@@ -406,14 +404,8 @@ const App = () => {
           <View style={[!showAllBtns && styles.functionalityContainer]}>
             {!showAllBtns ? (
               <Pressable onPress={handleListen} style={[styles.listenButton]}>
-                <Text
-                  style={[
-                    hstyles.textUpper,
-                    hstyles.textLarge,
-                    hstyles.textBold,
-                    hstyles.textCenter,
-                    hstyles.textLight,
-                  ]}>
+                <Image source={hearIcon} style={[styles.icon]} />
+                <Text style={[styles.listenButtonText, hstyles.ml3]}>
                   Listen
                 </Text>
               </Pressable>

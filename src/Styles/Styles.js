@@ -21,6 +21,8 @@ const marginHelpers = {
   mr1: {marginRight: 5},
   mb1: {marginBottom: 5},
   ml1: {marginLeft: 5},
+  ml2: {marginLeft: 10},
+  ml3: {marginLeft: 15},
   // Add more as needed
 };
 

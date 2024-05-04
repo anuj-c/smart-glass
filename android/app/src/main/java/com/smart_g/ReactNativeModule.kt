@@ -16,7 +16,6 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.WritableArray
 import com.google.mlkit.vision.common.InputImage
 import com.smart_g.glassModels.Audio
-import com.smart_g.glassModels.Currency
 import com.smart_g.glassModels.Currency2
 import com.smart_g.glassModels.Database
 import com.smart_g.glassModels.Detector

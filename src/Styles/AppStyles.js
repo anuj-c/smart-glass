@@ -1,19 +1,29 @@
+import hstyles from './Styles';
 import {StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(242, 242, 242, 1)',
   },
   headerText: {
-    backgroundColor: 'rgba(135, 206, 235, 1)',
+    backgroundColor: 'rgba(30, 30, 30, 1)',
     paddingVertical: 10,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
   },
   textStyles: {
-    color: 'black',
+    color: 'white',
     fontWeight: 600,
-    fontSize: 30,
-    textAlign: 'center',
+    fontSize: 25,
+    textAlign: 'left',
+  },
+  icon: {
+    width: 35,
+    height: 35,
   },
   contentContainer: {
     flex: 1,
@@ -23,11 +33,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     height: 300,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,1)',
   },
   cameraContainer: {
     position: 'absolute',
     transform: [{rotate: '90deg'}, {translateX: -35}],
+  },
+  cameraContainerText: {
+    color: 'white',
+    fontWeight: 400,
+    fontSize: 20,
+    textAlign: 'left',
+    position: 'absolute',
+    left: 30,
+    top: 10,
   },
   camera: {
     width: 240,
@@ -40,7 +59,15 @@ const styles = StyleSheet.create({
   displayResContainer: {
     flex: 1,
     marginVertical: 5,
-    backgroundColor: 'rgba(0,150,255,0.4)',
+    // backgroundColor: 'rgba(0,150,255,1)',
+  },
+  detectionText: {
+    ...hstyles.textCenter,
+    ...hstyles.textDark,
+    ...hstyles.textLarge,
+    ...hstyles.textBold,
+    ...hstyles.textUpper,
+    ...hstyles.m1,
   },
   resultView: {
     marginTop: 10,
@@ -54,24 +81,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  resultText: {
+  resultMapView: {
     marginBottom: 20,
     marginHorizontal: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    elevation: 5,
+    backgroundColor: 'rgba(255,255,255,1)',
+    borderRadius: 10,
+  },
+  resultText: {
     textAlign: 'center',
     color: 'black',
     fontWeight: 500,
-    fontSize: 20,
-    paddingHorizontal: 10,
-    borderColor: 'black',
-    borderWidth: 1,
-    // backgroundColor: 'skyblue',
-    backgroundColor: 'rgba(135,206,235,1)',
+    fontSize: 16,
+    ...hstyles.textUpper,
   },
   functionalityContainer: {
     backgroundColor: 'rgba(0,150,255,1)',
   },
   listenButton: {
-    paddingVertical: 30,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    backgroundColor: 'rgba(245, 86, 86,1)',
+  },
+  listenButtonText: {
+    fontSize: 30,
+    ...hstyles.textUpper,
+    ...hstyles.textBold,
+    ...hstyles.textCenter,
+    ...hstyles.textLight,
   },
   functionalityButtons: {
     justifyContent: 'center',
@@ -94,11 +135,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: 'red',
     zIndex: 100,
-  },
-  showAllBtn: {
-    position: 'absolute',
-    right: 10,
-    top: 10,
   },
 });
 
