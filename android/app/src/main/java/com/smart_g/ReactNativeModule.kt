@@ -1,9 +1,11 @@
 package com.smart_g
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.Rect
+import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -48,31 +50,12 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
     postRotate(90f)
   }
 
-  @ReactMethod
-  fun saveImageFromUri(uri: String, outputFileName: String) {
-    val imageUri = Uri.parse(uri)
-    val context = reactApplicationContext
-    val inputStream: InputStream? = context.contentResolver.openInputStream(imageUri)
-    val outputDir = context.getExternalFilesDir(null) // Change this to your desired output directory
-    val outputFile = File(outputDir, outputFileName)
-
-    inputStream.use { input ->
-      FileOutputStream(outputFile).use { output ->
-        val buffer = ByteArray(4 * 1024) // buffer size
-        var read: Int
-        while (input?.read(buffer).also { read = it ?: -1 } != -1) {
-          output.write(buffer, 0, read)
-        }
-        output.flush()
-      }
-    }
-  }
-
   @RequiresApi(Build.VERSION_CODES.P)
   @ReactMethod
   fun detectObjects(uri: String, promise: Promise) {
     try {
       tensorImage = helper.uriToTensor(uri)
+      val tensorImage2 = helper.uriToTensor(uri)
       val results = detector.detectObjects(tensorImage)
 
       val data = mutableMapOf<String, Int>()
@@ -85,6 +68,9 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
             label = cats.label
           }
         }
+        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox),
+          "${label}.jpg"
+        )
         if (data.containsKey(label)) {
           data[label] = data[label]!! + 1
         } else {
@@ -166,6 +152,7 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   fun detectObjectsForTime(uri: String, objectNames: ReadableArray, promise: Promise) {
     try {
       tensorImage = helper.uriToTensor(uri)
+      val tensorImage2 = helper.uriToTensor(uri)
       val objectNamesRet: WritableArray = Arguments.createArray()
       for (i in 0 until objectNames.size()) {
         objectNamesRet.pushString(objectNames.getString(i))
@@ -184,6 +171,7 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
           }
         }
         if(helper.containsElement(objectNames, label)) continue
+        helper.drawBoxAndSaveImage(tensorImage2!!.bitmap, helper.rectF2Rect(result.boundingBox), "$label.jpg")
         if (data.containsKey(label)) {
           data[label] = data[label]!! + 1
         } else {
@@ -347,7 +335,7 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
             promise.resolve("$name: is saved successfully.")
           }else {
             audioClass.speakText("Person previously saved as: $savedName")
-            promise.resolve("Person previously saved as: $savedName")
+            promise.resolve("Person previously saved as: $savedName. New name: $name.")
           }
         }
       }
@@ -388,13 +376,15 @@ class ReactNativeModule(reactContext: ReactApplicationContext) : ReactContextBas
   }
 
   @ReactMethod
-  fun findSimilarSound(word: String, promise: Promise) {
-    try{
-      val matches = audioClass.isPhoneticallySimilar(word)
-      println(matches)
-      promise.resolve(matches)
-    } catch (e: Exception) {
-      Log.e("TAG", "$e")
+  fun checkUsbConnection(promise: Promise) {
+    val usbManager = reactApplicationContext.getSystemService(Context.USB_SERVICE) as UsbManager
+    val connectedDevices = usbManager.deviceList
+    if (connectedDevices.isNotEmpty()) {
+      audioClass.speakText("Starting the camera.")
+      promise.resolve(true)
+    } else {
+      audioClass.speakText("Camera not found. Please attach the smart glass.")
+      promise.resolve(false)
     }
   }
 }

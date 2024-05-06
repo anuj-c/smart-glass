@@ -7,6 +7,8 @@ import {
   ScrollView,
   Pressable,
   Image,
+  Modal,
+  TextInput,
 } from 'react-native';
 import {UvcCamera} from 'react-native-uvc-camera';
 import {hstyles, styles} from './Styles';
@@ -23,6 +25,8 @@ const App = () => {
   const [detect, setDetect] = useState(false);
   const [showAllBtns, setShowAllBtns] = useState(false);
   const detectRef = useRef(detect);
+  const [isVisible, setIsVisible] = useState(false);
+  const [userInput, setUserInput] = useState('');
 
   // useEffect to continuously perform object detection
   useEffect(() => {
@@ -50,19 +54,30 @@ const App = () => {
     runFunction();
   }, [detect]);
 
+  const startCamera = async () => {
+    try {
+      const res = await ObjectDetection.checkUsbConnection();
+      if (res) {
+        setView(true);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const handleStop = () => {
     setDetect(false);
     setView(false);
   };
 
   const joinAfterAs = array => {
-    const index = array.indexOf('as');
+    //const index = array.indexOf('as');
 
-    if (index !== -1 && index < array.length - 1) {
-      return array.slice(index + 1).join(' ');
-    }
+    //if (index !== -1 && index < array.length - 1) {
+    return array.slice(1).join(' ');
+    //}
 
-    return '';
+    //return '';
   };
 
   const isMatch = (resArray, someArr = [], everyArr = []) => {
@@ -79,8 +94,8 @@ const App = () => {
     const resArray = res.toLowerCase().split(' ');
     setObje(resArray);
     console.log(resArray);
-    if (isMatch(resArray, ['start'])) {
-      setView(true);
+    if (isMatch(resArray, ['start', 'begin'])) {
+      startCamera();
     } else if (isMatch(resArray, ['stop', 'terminate', 'end'], ['camera'])) {
       handleStop();
     } else if (isMatch(resArray, ['text'])) {
@@ -98,18 +113,19 @@ const App = () => {
     } else if (isMatch(resArray, ['remember'])) {
       const nameToSave = joinAfterAs(resArray);
       if (nameToSave === '') {
-        speakText('Name was unclear. Please say the name again.');
-        setTimeout(async () => {
-          const justName = await ObjectDetection.callListener();
-          handleFaceRecog(justName.toLowerCase());
-        }, 2000);
+        speakText('Name was unclear.');
+        openDialog();
+        //setTimeout(async () => {
+        //const justName = await ObjectDetection.callListener();
+        //handleFaceRecog(justName.toLowerCase());
+        //}, 2000);
       } else {
         handleFaceRecog(nameToSave.toLowerCase());
       }
     } else if (isMatch(resArray, ['who', 'person'])) {
       handleFaceDetect();
-    } else if (isMatch(resArray, ['stop', 'terminate', 'end'], ['speaker'])) {
-      stopSpeaking();
+      //} else if (isMatch(resArray, ['stop', 'terminate', 'end'], ['speaker'])) {
+      //stopSpeaking();
     } else if (isMatch(resArray, ['currency', 'money'])) {
       detectCurrency();
     } else if (isMatch(resArray, ['locate'])) {
@@ -332,7 +348,6 @@ const App = () => {
   };
 
   const findTheObject = async objectName => {
-    console.log({objectName});
     let count = 0;
     for (let i = 0; i < 5; i++) {
       try {
@@ -354,7 +369,7 @@ const App = () => {
     }
     const strToSpeak = `${count} instance of ${objectName} detected.`;
     speakText(strToSpeak);
-    setObje(strToSpeak);
+    setObje([strToSpeak]);
   };
 
   const findNumPeople = async () => {
@@ -406,8 +421,41 @@ const App = () => {
     }
   };
 
+  const openDialog = () => {
+    setIsVisible(true);
+  };
+
+  const closeDialog = () => {
+    setIsVisible(false);
+  };
+
+  const submitInput = () => {
+    console.log('User Input:', userInput);
+    handleFaceRecog(userInput.toLowerCase());
+    setUserInput('');
+    closeDialog();
+  };
+
   return (
     <View style={[styles.container]}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isVisible}
+        onRequestClose={closeDialog}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Enter your input:</Text>
+            <TextInput
+              style={styles.textInput}
+              onChangeText={setUserInput}
+              value={userInput}
+              placeholder="Type here..."
+            />
+            <Button title="Submit" onPress={submitInput} />
+          </View>
+        </View>
+      </Modal>
       <View style={[styles.headerText]}>
         <View style={[hstyles.flexRow]}>
           <Image source={googleGlass} style={[styles.icon]} />
@@ -420,7 +468,9 @@ const App = () => {
 
       <View style={[styles.contentContainer]}>
         <View style={[styles.cameraOuterContainer]}>
-          <Text style={[styles.cameraContainerText]}>UVC Camera</Text>
+          <Text style={[styles.cameraContainerText]}>
+            UVC Camera {view ? 'ON' : 'OFF'}
+          </Text>
           {view && (
             <View style={[styles.cameraContainer]}>
               <UvcCamera
@@ -466,7 +516,7 @@ const App = () => {
                   <Button title="Start" onPress={() => setView(true)} />
                 </View>
                 <View style={[hstyles.p2]}>
-                  <Button title="Stop" onPress={stopRecording} />
+                  <Button title="Stop" onPress={handleStop} />
                 </View>
                 <View style={[hstyles.p2]}>
                   <Button title="Listen" onPress={handleListen} />

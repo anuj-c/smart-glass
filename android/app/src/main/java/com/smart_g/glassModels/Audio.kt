@@ -11,16 +11,12 @@ import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import java.util.Locale
-import org.apache.commons.codec.language.DoubleMetaphone
 
 class Audio(val context: Context) {
   private var tts: TextToSpeech? = null
   private var speechRecognizer: SpeechRecognizer? = null
   private val handler = Handler(Looper.getMainLooper())
   private var textRecognitionCallback: ((String) -> Unit)? = null
-  private val commands = listOf("start", "terminate", "camera", "text", "medicine", "headline",
-    "remember", "as", "who", "person", "speaker", "money", "currency", "locate", "is", "there",
-    "a", "many", "people", "delete", "detect", "object")
 
   init {
     initializeTextToSpeech()
@@ -107,7 +103,7 @@ class Audio(val context: Context) {
     if (SpeechRecognizer.isRecognitionAvailable(context)) {
       handler.post {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-          putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+          putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
           putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
         }
         speechRecognizer?.startListening(intent)
@@ -128,52 +124,6 @@ class Audio(val context: Context) {
   fun isSpeaking(): Boolean? {
     return tts?.isSpeaking
   }
-
-  fun isPhoneticallySimilar(word1: String): MutableList<String> {
-    val doubleMetaphone = DoubleMetaphone()
-    val matches = mutableListOf<String>()
-//    val encodedWord1 = doubleMetaphone.doubleMetaphone(word1)
-//    println(encodedWord1)
-    commands.forEach {
-//      val encodedWord2 = doubleMetaphone.doubleMetaphone(it)
-      val distance = levenshtein(word1, it)
-      val maxLength = maxOf(word1.length, it.length)
-      val percent = (1 - distance.toDouble() / maxLength)
-      if(percent > 0.5)
-        println("$percent| $it")
-    }
-    println(matches)
-    return matches
-  }
-
-  private fun levenshtein(lhs : CharSequence, rhs : CharSequence) : Int {
-    val lhsLength = lhs.length
-    val rhsLength = rhs.length
-
-    var cost = IntArray(lhsLength + 1) { it }
-    var newCost = IntArray(lhsLength + 1) { 0 }
-
-    for (i in 1..rhsLength) {
-      newCost[0] = i
-
-      for (j in 1..lhsLength) {
-        val editCost = if(lhs[j - 1] == rhs[i - 1]) 0 else 1
-
-        val costReplace = cost[j - 1] + editCost
-        val costInsert = cost[j] + 1
-        val costDelete = newCost[j - 1] + 1
-
-        newCost[j] = minOf(costInsert, costDelete, costReplace)
-      }
-
-      val swap = cost
-      cost = newCost
-      newCost = swap
-    }
-
-    return cost[lhsLength]
-  }
-
 
   fun release() {
     handler.post {
