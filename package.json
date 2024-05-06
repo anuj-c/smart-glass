@@ -12,6 +12,8 @@
   "dependencies": {
     "react": "18.2.0",
     "react-native": "0.73.0",
+    "react-native-paper": "^5.12.3",
+    "react-native-svg": "^15.2.0",
     "react-native-uvc-camera": "^2.0.2"
   },
   "devDependencies": {

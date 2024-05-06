@@ -54,7 +54,7 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -89,18 +89,33 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('smartg.keystore')
+            storePassword 'something'
+            keyAlias 'smartg'
+            keyPassword 'something'
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+    }
+    aaptOptions {
+        noCompress "tflite"
+        // or noCompress "lite"
+    }
+    project.ext.react = [
+        enableHermes: true  // <- set to true to enable Hermes
+    ]
+    packagingOptions {
+        exclude '/com/serenegiant/widget/IAspectRatioView.class'
     }
 }
 
@@ -108,6 +123,22 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation("com.facebook.react:flipper-integration")
+    implementation 'org.tensorflow:tensorflow-lite:2.14.0'
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.3.1")
+    implementation 'org.tensorflow:tensorflow-lite-support:0.4.4'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.14.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.tensorflow:tensorflow-android:1.13.1'
+    implementation 'commons-codec:commons-codec:1.15'
+
+    // To recognize Latin script
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.0'
+
+    // To recognize Devanagari script
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition-devanagari:16.0.0'
+
+    implementation 'com.google.android.gms:play-services-mlkit-face-detection:17.1.0'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
