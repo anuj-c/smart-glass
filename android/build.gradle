@@ -23,3 +23,9 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+allprojects {
+    repositories {
+        maven { url 'https://raw.githubusercontent.com/duvitech-llc/libcommon/master/repository/' }
+    }
+}
